@@ -13,7 +13,7 @@ from google.adk.workflow import Workflow, JoinNode, node, START
 from app.core.local_storage import LocalStateStore
 from app.core.hitl import review_before_execute
 from app.core.privacy import DataMaskingMiddleware
-from app.tools.qdrant_rag import QdrantRAGService
+from app.tools.pinecone_rag import PineconeRAGService
 
 # Set up environment variables for authentication
 try:
@@ -82,9 +82,9 @@ def chatbot_node(ctx: Context, node_input: Any) -> Event:
         else:
             response = f"Failed: Insufficient leave balance. Requested {days} days but you only have {balance} days."
     else:
-        # Vector search query simulation over Qdrant using the masked input
-        qdrant_service = QdrantRAGService()
-        response = qdrant_service.query_rules(clean_input)
+        # Vector search query simulation over Pinecone using the masked input
+        pinecone_service = PineconeRAGService()
+        response = pinecone_service.query_rules(clean_input)
 
     # Sync to local storage
     local_store = LocalStateStore()
@@ -181,9 +181,9 @@ def policy_rag_agent(ctx: Context, node_input: Any) -> Event:
     
     verified_files = [f for f in docs if f.endswith(('.pdf', '.docx'))]
     
-    # Query production Qdrant vector database
-    qdrant_service = QdrantRAGService()
-    brief = qdrant_service.query_rules(clean_val)
+    # Query production Pinecone vector database
+    pinecone_service = PineconeRAGService()
+    brief = pinecone_service.query_rules(clean_val)
 
     state_updates = {
         "documents": docs,

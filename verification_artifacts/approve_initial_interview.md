@@ -9,7 +9,6 @@
   "api_action": "Email HR & Candidate Interview Confirmation",
   "target_node": "initial_interview",
   "state_at_trigger": {
-    "__session_metadata__": "{'displayName': 'hello'}",
     "confirmation_email_sent": "True",
     "active_stage": "Policy-Checked",
     "credentials_sent": "True",
