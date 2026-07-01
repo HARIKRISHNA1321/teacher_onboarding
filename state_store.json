@@ -1,0 +1,31 @@
+{
+  "confirmation_email_sent": true,
+  "active_stage": "Policy-Checked",
+  "credentials_sent": true,
+  "manager_interview_scheduled": true,
+  "chairperson_notified": true,
+  "policy_brief": "[Qdrant Search @ http://localhost:6333] RETRIEVED RULES CONTEXT:\n- Data Input (PII Scrubbed): done\n- Joining guidelines: Submit original verification documents within 30 days.\n- Campus ethics: Absolute professionalism in research and teaching duties.",
+  "it_notified": true,
+  "admin_notified": true,
+  "leave_balance": 22,
+  "leaves": [
+    {
+      "days": 3,
+      "status": "approved",
+      "request": "parts=[Part(\n  text='Please apply for 3 days leave from 22nd July'\n)] role='user'"
+    },
+    {
+      "days": 3,
+      "status": "approved",
+      "request": "parts=[Part(\n  text='Please apply for 3 days leave from 22nd July'\n)] role='user'"
+    },
+    {
+      "days": 2,
+      "status": "approved",
+      "request": "parts=[Part(\n  text='I am [EMAIL], my phone is 999-999-9999, apply for 2 days leave'\n)] role='user'"
+    }
+  ],
+  "documents": [
+    "done"
+  ]
+}

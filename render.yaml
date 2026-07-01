@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: college-onboard-platform
+    env: docker
+    dockerFilePath: Dockerfile
+    plan: free
+    numInstances: 1
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: ENV
+        value: production
+      - key: PINECONE_API_KEY
+        sync: false # Set in dashboard
+      - key: PINECONE_ENV
+        sync: false # Set in dashboard
+      - key: HR_EMAIL
+        value: hr@pes.edu
+      - key: SMTP_TOKEN
+        sync: false # Set in dashboard
+      - key: CALENDAR_TOKEN
+        sync: false # Set in dashboard
