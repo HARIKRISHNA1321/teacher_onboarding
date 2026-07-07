@@ -1,31 +1,203 @@
 {
-  "confirmation_email_sent": true,
-  "active_stage": "Policy-Checked",
-  "credentials_sent": true,
-  "manager_interview_scheduled": true,
-  "chairperson_notified": true,
-  "policy_brief": "[Qdrant Search @ http://localhost:6333] RETRIEVED RULES CONTEXT:\n- Data Input (PII Scrubbed): done\n- Joining guidelines: Submit original verification documents within 30 days.\n- Campus ethics: Absolute professionalism in research and teaching duties.",
-  "it_notified": true,
-  "admin_notified": true,
-  "leave_balance": 22,
-  "leaves": [
+  "announcements": [
     {
-      "days": 3,
-      "status": "approved",
-      "request": "parts=[Part(\n  text='Please apply for 3 days leave from 22nd July'\n)] role='user'"
+      "id": 1,
+      "title": "MedInnTech Minor Degree Program",
+      "content": "Minor Degree in MedInnTech commences Monday, 6th July 2026. 22 Credits, 11 Courses, 5 Terms.",
+      "date": "2026-07-01",
+      "sender": "Chairperson"
     },
     {
-      "days": 3,
-      "status": "approved",
-      "request": "parts=[Part(\n  text='Please apply for 3 days leave from 22nd July'\n)] role='user'"
+      "id": 2,
+      "title": "Ph.D Course Work Exam August 2026",
+      "content": "Exam August 2026 Notification with Application form available in departments.",
+      "date": "2026-07-01",
+      "sender": "Admin"
     },
     {
-      "days": 2,
-      "status": "approved",
-      "request": "parts=[Part(\n  text='I am [EMAIL], my phone is 999-999-9999, apply for 2 days leave'\n)] role='user'"
+      "id": 3,
+      "title": "ESA June - July 2026 Backlog Room Allotment",
+      "content": "Backlog Room Allotment Session-1 published for all undergraduate classes.",
+      "date": "2026-07-02",
+      "sender": "Admin"
+    },
+    {
+      "id": 4,
+      "title": "Teacher Meeting",
+      "content": "Results announcement",
+      "date": "2026-07-02",
+      "sender": "Admin"
     }
   ],
-  "documents": [
-    "done"
-  ]
+  "teachers": {
+    "jagan": {
+      "name": "Jagan",
+      "email": "jaganmohanam636145@gmail.com",
+      "department": "Computer science and engineering",
+      "designation": "Assistant",
+      "username": "jagan",
+      "password": "password",
+      "seating_info": "Room 620, Desk A",
+      "attendance": [
+        {
+          "date": "2026-06-10",
+          "status": "Absent",
+          "reason": "Personal Leave"
+        },
+        {
+          "date": "2026-06-20",
+          "status": "Absent",
+          "reason": "Medical Leave"
+        }
+      ],
+      "documents": [],
+      "projects": [],
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:00 AM - 11:30 AM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        },
+        {
+          "day": "Thursday",
+          "time": "02:00 PM - 03:30 PM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        }
+      ],
+      "policy_brief": "Pending document upload and policy checker run.",
+      "leave_balance": 30
+    },
+    "harikrishna": {
+      "name": "Harikrishna",
+      "email": "1321harikrishna@gmail.com",
+      "department": "Computer science and engineering",
+      "designation": "Assistant Professor",
+      "username": "harikrishna",
+      "password": "password",
+      "seating_info": "Not Allotted",
+      "attendance": [
+        {
+          "date": "2026-06-10",
+          "status": "Absent",
+          "reason": "Personal Leave"
+        },
+        {
+          "date": "2026-06-20",
+          "status": "Absent",
+          "reason": "Medical Leave"
+        }
+      ],
+      "documents": [],
+      "projects": [],
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:00 AM - 11:30 AM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        },
+        {
+          "day": "Thursday",
+          "time": "02:00 PM - 03:30 PM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        }
+      ],
+      "policy_brief": "Pending document upload and policy checker run.",
+      "leave_balance": 30
+    },
+    "hari": {
+      "name": "hari",
+      "email": "1321harikrishna@gmail.com",
+      "department": "Computer science and engineering",
+      "designation": "Assistant Professor",
+      "username": "hari",
+      "password": "password",
+      "seating_info": "Room 620, Desk A",
+      "attendance": [
+        {
+          "date": "2026-06-10",
+          "status": "Absent",
+          "reason": "Personal Leave"
+        },
+        {
+          "date": "2026-06-20",
+          "status": "Absent",
+          "reason": "Medical Leave"
+        }
+      ],
+      "documents": [],
+      "projects": [],
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:00 AM - 11:30 AM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        },
+        {
+          "day": "Thursday",
+          "time": "02:00 PM - 03:30 PM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        }
+      ],
+      "policy_brief": "Pending document upload and policy checker run.",
+      "leave_balance": 30
+    },
+    "teacher": {
+      "name": "Dr. Jane Doe",
+      "email": "1321harikrishna@gmail.com",
+      "username": "teacher",
+      "password": "password",
+      "seating_info": "Not Allotted",
+      "leave_balance": 30,
+      "credentials_sent": true,
+      "active_stage": "Credentials-Sent"
+    },
+    "gaurav": {
+      "name": "gaurav",
+      "email": "gauravb2188@gmail.com",
+      "department": "Computer science and engineering",
+      "designation": "Assistant Professor",
+      "username": "gaurav",
+      "password": "password",
+      "seating_info": "Not Allotted",
+      "attendance": [
+        {
+          "date": "2026-06-10",
+          "status": "Absent",
+          "reason": "Personal Leave"
+        },
+        {
+          "date": "2026-06-20",
+          "status": "Absent",
+          "reason": "Medical Leave"
+        }
+      ],
+      "documents": [],
+      "projects": [],
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:00 AM - 11:30 AM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        },
+        {
+          "day": "Thursday",
+          "time": "02:00 PM - 03:30 PM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        }
+      ],
+      "policy_brief": "Pending document upload and policy checker run.",
+      "leave_balance": 30
+    }
+  },
+  "confirmation_email_sent": true,
+  "active_stage": "Credentials-Sent",
+  "credentials_sent": true
 }

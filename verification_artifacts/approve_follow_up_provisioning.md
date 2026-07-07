@@ -15,11 +15,11 @@
     "credentials_sent": "True",
     "manager_interview_scheduled": "True",
     "chairperson_notified": "True",
-    "policy_brief": "[Qdrant Search @ http://localhost:6333] RETRIEVED RULES CONTEXT:\n- Data Input (PII Scrubbed): done\n- Joining guidelines: Submit original verification documents within 30 days.\n- Campus ethics: Absolute professionalism in research and teaching duties.",
+    "policy_brief": "[Pinecone Search @ your_pinecone_environment_here] RETRIEVED RULES CONTEXT:\n- Data Input (PII Scrubbed): joining.pdf, structural.pdf\n- Joining guidelines: Submit original verification documents within 30 days.\n- Campus ethics: Absolute professionalism in research and teaching duties.",
     "it_notified": "True",
     "admin_notified": "True",
     "leave_balance": "22",
-    "documents": "['done']"
+    "documents": "['joining.pdf', 'structural.pdf']"
   }
 }
 ```

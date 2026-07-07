@@ -9,17 +9,12 @@
   "api_action": "Schedule calendar appointment and invite chairperson",
   "target_node": "scheduler_agent",
   "state_at_trigger": {
-    "__session_metadata__": "{'displayName': 'hello'}",
+    "leave_balance": "30",
+    "email": "1321harikrishna@gmail.com",
+    "username": "teacher",
+    "password": "password",
     "confirmation_email_sent": "True",
-    "active_stage": "Procedures-Initiated",
-    "credentials_sent": "True",
-    "manager_interview_scheduled": "True",
-    "chairperson_notified": "True",
-    "policy_brief": "University Rules Summary Brief:\n- Joining guidelines: Submit original verification documents within 30 days.\n- Campus ethics: Absolute professionalism in research and teaching duties.",
-    "it_notified": "True",
-    "admin_notified": "True",
-    "leave_balance": "22",
-    "documents": "['joining_letter.pdf', 'degree.docx']"
+    "active_stage": "Procedures-Initiated"
   }
 }
 ```

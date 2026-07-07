@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PES University Academic Portal</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background glows -->
+    <div class="glow-bg glow-primary"></div>
+    <div class="glow-bg glow-secondary"></div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="app-container">
+
+        <!-- ==================== 1. LOGIN SCREEN ==================== -->
+        <div id="login-screen" class="login-wrapper">
+            <div class="glass-card login-card">
+                <div class="logo-area">
+                    <span class="logo-icon">🎓</span>
+                    <h1>PES UNIVERSITY</h1>
+                    <p class="subtitle">Academic & Onboarding Portal</p>
+                </div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter username (e.g. teacher, hr, admin)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Sign In Securely</button>
+                </form>
+                <div class="login-hint">
+                    <p><strong>Primary Logins for Testing:</strong></p>
+                    <p>Candidate: <code>teacher</code> / <code>password</code></p>
+                    <p>HR Dept: <code>hr</code> / <code>password</code></p>
+                    <p>Admin: <code>admin</code> / <code>password</code></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 2. MAIN PORTAL WINDOW (3-COLUMN LAYOUT) ==================== -->
+        <div id="portal-screen" class="portal-wrapper hidden">
+            
+            <!-- TOP BAR -->
+            <header class="portal-header glass-card">
+                <div class="header-logo">
+                    <span class="logo-icon">🎓</span>
+                    <div>
+                        <h2>PES UNIVERSITY</h2>
+                        <span id="role-badge" class="badge">Role: Guest</span>
+                    </div>
+                </div>
+                <div class="header-user-info">
+                    <span id="user-display-name">Loading...</span>
+                    <button id="logout-btn" class="btn btn-danger btn-sm">Sign Out</button>
+                </div>
+            </header>
+
+            <!-- 3-COLUMN LAYOUT PANEL -->
+            <div class="portal-body">
+                
+                <!-- COLUMN 1: LEFT SIDEBAR (DASHBOARD NAVIGATION & CHAT) -->
+                <aside class="sidebar-col glass-card">
+                    <!-- Sidebar Profile Card -->
+                    <div class="sidebar-profile">
+                        <div class="profile-avatar">👤</div>
+                        <h4 id="sidebar-name">Dr. Jane Doe</h4>
+                        <p id="sidebar-email">jane@pes.edu</p>
+                    </div>
+
+                    <!-- Navigation Tabs -->
+                    <nav class="sidebar-nav">
+                        <!-- Candidate Tabs -->
+                        <div id="candidate-menu" class="menu-group">
+                            <button class="nav-tab active" data-tab="candidate-profile">My Profile</button>
+                            <button class="nav-tab" data-tab="candidate-calendar">My Calendar</button>
+                            <button class="nav-tab" data-tab="candidate-chatbot">RAG Chatbot</button>
+                            <button class="nav-tab" data-tab="candidate-attendance">My Attendance</button>
+                            <button class="nav-tab" data-tab="candidate-seating">Seating Info</button>
+                            <button class="nav-tab" data-tab="candidate-documents">Submit Documents</button>
+                            <button class="nav-tab" data-tab="candidate-projects">Projects & Publications</button>
+                        </div>
+
+                        <!-- HR Menu -->
+                        <div id="hr-menu" class="menu-group hidden">
+                            <button class="nav-tab active" data-tab="hr-teachers-list">Manage Teachers</button>
+                            <button class="nav-tab" data-tab="hr-add-teacher">Add New Teacher</button>
+                        </div>
+
+                        <!-- Admin/Chairperson Menu -->
+                        <div id="admin-menu" class="menu-group hidden">
+                            <button class="nav-tab active" data-tab="admin-seating-allotment">Allot Seating</button>
+                            <button class="nav-tab" data-tab="admin-announcements">Broadcast Announcement</button>
+                            <button class="nav-tab" data-tab="admin-teachers-overview">All Teachers Overview</button>
+                        </div>
+                    </nav>
+                </aside>
+
+                <!-- COLUMN 2: MIDDLE MAIN CONTENT (DYNAMIC VIEWS) -->
+                <main class="main-content-col glass-card">
+                    
+                    <!-- ==================== CANDIDATE VIEWS ==================== -->
+                    <!-- My Profile View -->
+                    <div id="tab-candidate-profile" class="tab-pane">
+                        <h2>My Profile</h2>
+                        <p class="section-desc">Personal academic record details</p>
+                        <div class="profile-details-grid mt-3">
+                            <div class="profile-detail-item"><strong>Full Name:</strong> <span id="prof-name">-</span></div>
+                            <div class="profile-detail-item"><strong>Email Address:</strong> <span id="prof-email">-</span></div>
+                            <div class="profile-detail-item"><strong>Department:</strong> <span id="prof-dept">-</span></div>
+                            <div class="profile-detail-item"><strong>Designation:</strong> <span id="prof-desig">-</span></div>
+                            <div class="profile-detail-item"><strong>Leave Balance:</strong> <span id="prof-leaves">-</span> days</div>
+                        </div>
+                    </div>
+
+                    <!-- My Calendar Schedule -->
+                    <div id="tab-candidate-calendar" class="tab-pane hidden">
+                        <h2>Academic Schedule</h2>
+                        <p class="section-desc">Class engagement timetable</p>
+                        <div class="calendar-wrapper mt-3">
+                            <table class="schedule-table">
+                                <thead>
+                                    <tr>
+                                        <th>Day</th>
+                                        <th>Time Slot</th>
+                                        <th>Subject Name</th>
+                                        <th>Classroom</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="calendar-schedule-body">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Full Screen Chatbot View -->
+                    <div id="tab-candidate-chatbot" class="tab-pane hidden">
+                        <div class="chatbot-container-full">
+                            <div class="chatbot-header">
+                                <h3>PES Onboarding & Rules Assistant (Pinecone RAG)</h3>
+                            </div>
+                            <div class="chatbot-chat-body" id="fullscreen-chat-body">
+                                <div class="chat-message bot">
+                                    Hello! Ask me any questions about leaves, balances, or university policy documents. I scan and query verified guidelines using Pinecone.
+                                </div>
+                            </div>
+                            <div class="chatbot-footer">
+                                <input type="text" id="fullscreen-chat-input" placeholder="Ask rules (e.g. What is the joining rule?)...">
+                                <button id="fullscreen-chat-send" class="btn btn-primary">Send</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Dashboard View -->
+                    <div id="tab-candidate-attendance" class="tab-pane hidden">
+                        <h2>My Attendance Summary</h2>
+                        <p class="section-desc">Official absence logs</p>
+                        <div class="stats-cards-grid mt-3">
+                            <div class="stats-card">
+                                <h3>Present Days</h3>
+                                <div class="stats-num">24</div>
+                            </div>
+                            <div class="stats-card alert-card">
+                                <h3>Absent Days</h3>
+                                <div class="stats-num" id="attendance-absent-count">2</div>
+                            </div>
+                        </div>
+                        <div class="attendance-table-wrapper mt-3">
+                            <h4>Absent Record Details</h4>
+                            <table class="record-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Absent Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-record-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Seating Info View -->
+                    <div id="tab-candidate-seating" class="tab-pane hidden">
+                        <h2>Seating Allocation Info</h2>
+                        <p class="section-desc">Room and Desk allotment</p>
+                        <div class="seating-status-box mt-3" id="seating-status-box">
+                            <div class="seating-icon">🏢</div>
+                            <h3 id="seating-allocated-val">Not Allotted</h3>
+                            <p>Assigned and updated by Chairperson/Admin office</p>
+                        </div>
+                    </div>
+
+                    <!-- Submit Documents View -->
+                    <div id="tab-candidate-documents" class="tab-pane hidden">
+                        <h2>Document Submission Dashboard</h2>
+                        <p class="section-desc">Submit joining structural files (.pdf, .docx)</p>
+                        <div class="document-upload-form mt-3">
+                            <div class="form-group row-group">
+                                <input type="text" id="document-input" placeholder="e.g. Appointment_Letter.pdf" class="input-inline">
+                                <button id="submit-doc-btn" class="btn btn-primary">Upload Document</button>
+                            </div>
+                        </div>
+                        <div class="document-list-wrapper mt-3">
+                            <h4>Submitted Verification Files:</h4>
+                            <ul class="doc-list" id="submitted-doc-list">
+                                <!-- Dynamic List -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Projects & Publications View -->
+                    <div id="tab-candidate-projects" class="tab-pane hidden">
+                        <h2>My Projects & Publications</h2>
+                        <p class="section-desc">Academic works and research papers</p>
+                        <div class="empty-projects-box mt-3">
+                            <p class="text-muted">No projects or publications found in record.</p>
+                        </div>
+                    </div>
+
+                    <!-- ==================== HR VIEWS ==================== -->
+                    <!-- Manage Teachers List View -->
+                    <div id="tab-hr-teachers-list" class="tab-pane hidden">
+                        <h2>Manage Teachers</h2>
+                        <p class="section-desc">Click on any profile to edit and manage teacher records</p>
+                        <div class="teachers-list-container mt-3" id="hr-teachers-list-view">
+                            <!-- Dynamic Profiles -->
+                        </div>
+
+                        <!-- Edit Teacher Overlay / Drawer -->
+                        <div id="hr-edit-drawer" class="edit-drawer hidden mt-3">
+                            <div class="drawer-header">
+                                <h3>Edit Teacher Profile</h3>
+                                <button id="close-drawer-btn" class="close-btn">&times;</button>
+                            </div>
+                            <form id="hr-edit-form" class="mt-3">
+                                <input type="hidden" id="edit-username">
+                                <div class="form-group">
+                                    <label for="edit-name">Full Name</label>
+                                    <input type="text" id="edit-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit-email">Email Address</label>
+                                    <input type="email" id="edit-email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit-dept">Department</label>
+                                    <input type="text" id="edit-dept" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="edit-desig">Designation</label>
+                                    <input type="text" id="edit-desig" required>
+                                </div>
+                                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    <button type="button" id="delete-teacher-btn" class="btn btn-danger">Delete Profile</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Add New Teacher Form View -->
+                    <div id="tab-hr-add-teacher" class="tab-pane hidden">
+                        <h2>Add New Teacher Profile</h2>
+                        <p class="section-desc">Create teacher onboarding credentials and details</p>
+                        <form id="hr-add-teacher-form" class="mt-3">
+                            <div class="form-group">
+                                <label for="add-name">Full Name</label>
+                                <input type="text" id="add-name" placeholder="e.g. Dr. Richard Feynman" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="add-email">Email Address</label>
+                                <input type="email" id="add-email" placeholder="e.g. richard.feynman@pes.edu" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="add-dept">Department</label>
+                                <input type="text" id="add-dept" placeholder="Computer Science & Engineering" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="add-desig">Designation</label>
+                                <input type="text" id="add-desig" placeholder="Assistant Professor" required>
+                            </div>
+                            <div class="card-grid">
+                                <div class="form-group">
+                                    <label for="add-username">Username</label>
+                                    <input type="text" id="add-username" placeholder="e.g. richard" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="add-password">Password</label>
+                                    <input type="password" id="add-password" placeholder="e.g. feynman123" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">Create Profile & Credentials</button>
+                        </form>
+                    </div>
+
+                    <!-- ==================== ADMIN / CHAIRPERSON VIEWS ==================== -->
+                    <!-- Allot Seating View -->
+                    <div id="tab-admin-seating-allotment" class="tab-pane hidden">
+                        <h2>Seat & Room Allotment</h2>
+                        <p class="section-desc">Assign room and desk configurations to faculty members</p>
+                        <form id="admin-allotment-form" class="mt-3">
+                            <div class="form-group">
+                                <label for="allot-teacher-select">Select Teacher Profile</label>
+                                <select id="allot-teacher-select">
+                                    <!-- Dynamic list of teachers -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="allot-seating-input">Seat Coordinates</label>
+                                <input type="text" id="allot-seating-input" placeholder="e.g. Room 402, Desk A" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Allocate Space</button>
+                        </form>
+                    </div>
+
+                    <!-- Broadcast Announcement View -->
+                    <div id="tab-admin-announcements" class="tab-pane hidden">
+                        <h2>Broadcast Announcement</h2>
+                        <p class="section-desc">Post announcements shown in the candidate's dashboard</p>
+                        <form id="admin-announcement-form" class="mt-3">
+                            <div class="form-group">
+                                <label for="ann-title">Title</label>
+                                <input type="text" id="ann-title" placeholder="e.g. Mid-Term Exam Seating Chart" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ann-content">Content Details</label>
+                                <textarea id="ann-content" placeholder="Type announcement instructions..." rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Broadcast News</button>
+                        </form>
+                    </div>
+
+                    <!-- All Teachers Overview View -->
+                    <div id="tab-admin-teachers-overview" class="tab-pane hidden">
+                        <h2>All Teachers Overview</h2>
+                        <p class="section-desc">Complete register of onboarded faculty members</p>
+                        <div class="table-wrapper mt-3">
+                            <table class="record-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Department</th>
+                                        <th>Email</th>
+                                        <th>Seating Info</th>
+                                        <th>Docs Submitted</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-teachers-table-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </main>
+
+                <!-- COLUMN 3: RIGHT PANEL (PERSISTENT ANNOUNCEMENTS FOR CANDIDATE) -->
+                <aside class="announcements-col glass-card" id="announcements-sidebar">
+                    <h3>Announcements</h3>
+                    <p class="section-desc">Broadcasts from Admin office</p>
+                    <div class="announcements-list mt-3" id="announcements-list-view">
+                        <!-- Dynamic Announcements List -->
+                    </div>
+                </aside>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/static/app.js?v=1.0.6"></script>
+</body>
+</html>

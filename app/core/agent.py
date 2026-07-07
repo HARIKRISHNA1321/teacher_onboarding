@@ -40,6 +40,9 @@ class WorkflowState(BaseModel):
     admin_notified: bool = False
     leave_balance: int = 30
     leaves: List[Dict[str, Any]] = Field(default_factory=list)
+    email: str = ""
+    username: str = ""
+    password: str = ""
 
 # --- 2. Workflow Routing and Node Implementations ---
 
@@ -49,8 +52,16 @@ def router_node(ctx: Context, node_input: Any) -> Event:
     local_store = LocalStateStore()
     stored_state = local_store.load_state()
     if stored_state:
-        for k, v in stored_state.items():
-            ctx.state[k] = v
+        # If state contains multi-teacher mapping, extract the default 'teacher' details for ADK workflows
+        if "teachers" in stored_state and "teacher" in stored_state["teachers"]:
+            teacher_data = stored_state["teachers"]["teacher"]
+            for k in WorkflowState.model_fields.keys():
+                if k in teacher_data:
+                    ctx.state[k] = teacher_data[k]
+        else:
+            for k, v in stored_state.items():
+                if k in WorkflowState.model_fields.keys():
+                    ctx.state[k] = v
 
     text = str(node_input)
     if any(keyword in text.lower() for keyword in ["leave", "apply", "balance", "policy", "days"]):
@@ -95,6 +106,7 @@ def chatbot_node(ctx: Context, node_input: Any) -> Event:
     return Event(output=response, state=state_updates)
 
 
+@node(rerun_on_resume=True)
 @review_before_execute(api_action="Email HR & Candidate Interview Confirmation")
 def initial_interview(ctx: Context, node_input: Any) -> Event:
     """Processes post-interview status and triggers confirmation event."""
@@ -124,19 +136,99 @@ def triggered_procedures(ctx: Context, node_input: Any) -> Event:
     return Event(output="Procedures halted: Confirmation email flag is False.", route="halted")
 
 
+@node(rerun_on_resume=True)
 @review_before_execute(api_action="Generate & dispatch secure portal credentials via SMTP")
-def credential_agent(ctx: Context, node_input: Any) -> Event:
+async def credential_agent(ctx: Context, node_input: Any) -> Event:
     """Automatically generates and emails portal credentials."""
+    state = ctx.state
+    print(f'CURRENT WORKING STATE: {state}')
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    import logging
+    import asyncio
+    from app.core.config import SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD
+
+    email = ctx.state.get("email") or "jane.doe@pes.edu"
+    username = ctx.state.get("username") or "teacher"
+    password = ctx.state.get("password") or "password"
+    name = ctx.state.get("candidate_name") or "Dr. Jane Doe"
+
+    logging.info(f"Preparing to send credentials welcome email to {email}")
+
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }}
+        .card {{ background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 30px; max-width: 600px; margin: auto; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }}
+        h2 {{ color: #58a6ff; margin-top: 0; }}
+        p {{ line-height: 1.6; }}
+        .credentials {{ background: rgba(255, 255, 255, 0.08); padding: 15px; border-radius: 8px; border-left: 4px solid #58a6ff; font-family: monospace; margin: 20px 0; }}
+        .footer {{ font-size: 0.8em; color: #8b949e; text-align: center; margin-top: 30px; }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Welcome to PES University, {name}!</h2>
+        <p>Dear Faculty Member,</p>
+        <p>We are thrilled to welcome you to the PES University family. Your portal credentials have been successfully provisioned. Please log in using the details below:</p>
+        <div class="credentials">
+            <strong>Portal URL:</strong> http://localhost:8000<br>
+            <strong>Username:</strong> {username}<br>
+            <strong>Password:</strong> {password}
+        </div>
+        <p>After logging in, you will be guided through our onboarding workspace to upload your credentials and check university policy guidelines.</p>
+        <p>Best Regards,<br>HR Department<br>PES University</p>
+        <div class="footer">
+            This is an automated onboarding email. Please do not reply directly.
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+    def _send_email():
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = "Welcome to PES University - Portal Credentials"
+            msg["From"] = SMTP_USERNAME
+            msg["To"] = email
+            msg.attach(MIMEText(html_content, "html"))
+            
+            # Temporary fallback print statement right before connection
+            print(f"[DEBUG SMTP] Destination email address: {email}")
+            
+            print('SMTP Connection Attempting...')
+            # Connect to SMTP with TLS enabled
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.sendmail(SMTP_USERNAME, email, msg.as_string())
+        except Exception as smtp_err:
+            import traceback
+            print(f"[DEBUG SMTP ERROR] SMTP transaction failed for {email}: {smtp_err}")
+            traceback.print_exc()
+            raise smtp_err
+
+    try:
+        await asyncio.to_thread(_send_email)
+        logging.info(f"Successfully dispatched welcome email to {email}")
+    except Exception as e:
+        logging.error(f"Failed to dispatch welcome email to {email}: {e}")
+
     state_updates = {
         "credentials_sent": True,
-        "active_stage": "Credentials-Generated"
+        "active_stage": "Credentials-Sent"
     }
     local_store = LocalStateStore()
     current_state = local_store.load_state()
     current_state.update(state_updates)
+    if "teachers" in current_state and "teacher" in current_state["teachers"]:
+        current_state["teachers"]["teacher"].update(state_updates)
     local_store.save_state(current_state)
 
-    msg = "Credentials Generated: Portal username: jane.doe@pes.edu has been sent safely."
+    msg = f"Credentials Generated: Welcome email successfully dispatched via SMTP with TLS to {email}."
     return Event(output=msg, state=state_updates)
 
 
@@ -199,6 +291,7 @@ def policy_rag_agent(ctx: Context, node_input: Any) -> Event:
     return Event(output=msg, state=state_updates)
 
 
+@node(rerun_on_resume=True)
 @review_before_execute(api_action="Schedule calendar appointment and invite chairperson")
 def scheduler_agent(ctx: Context, node_input: Any) -> Event:
     """Manages sequential scheduling: first with manager, then email chairperson."""
@@ -224,6 +317,7 @@ def scheduler_agent(ctx: Context, node_input: Any) -> Event:
     return Event(output="Scheduler: Chairperson emailed to secure final presentation availability.", route="final_presentation_secured", state=state_updates)
 
 
+@node(rerun_on_resume=True)
 async def allotment_approval_gate(ctx: Context, node_input: Any):
     """Listens for final approval and requests place and seat allotment criteria."""
     if not ctx.state.get("final_approval_flag", False):
@@ -256,6 +350,7 @@ async def allotment_approval_gate(ctx: Context, node_input: Any):
         yield Event(output="Allotment already approved.")
 
 
+@node(rerun_on_resume=True)
 @review_before_execute(api_action="Notify IT and Administrative departments for campus provisioning")
 def follow_up_provisioning(ctx: Context, node_input: Any) -> Event:
     """Blasts templates to IT & Admin for Wi-Fi, email, and ID printing."""

@@ -23,13 +23,30 @@ from app.app_utils.typing import Feedback
 from app.endpoints.routes import router
 
 setup_telemetry()
+otel_to_cloud = True
 try:
     _, project_id = google.auth.default()
 except Exception:
     project_id = "mock-project-id"
+    otel_to_cloud = False
 
-logging_client = google_cloud_logging.Client()
-logger = logging_client.logger(__name__)
+try:
+    logging_client = google_cloud_logging.Client()
+    logger = logging_client.logger(__name__)
+except Exception:
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    class LocalLogger:
+        def log_struct(self, data, severity="INFO"):
+            logging.info(f"[{severity}] {data}")
+        def info(self, msg):
+            logging.info(msg)
+        def error(self, msg):
+            logging.error(msg)
+        def warning(self, msg):
+            logging.warning(msg)
+    logger = LocalLogger()
+
 allow_origins = (
     os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
 )
@@ -39,19 +56,35 @@ AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 session_service_uri = None
 artifact_service_uri = f"gs://{logs_bucket_name}" if logs_bucket_name else None
 
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
 app: FastAPI = get_fast_api_app(
     agents_dir=AGENT_DIR,
     web=True,
     artifact_service_uri=artifact_service_uri,
     allow_origins=allow_origins,
     session_service_uri=session_service_uri,
-    otel_to_cloud=True,
+    otel_to_cloud=otel_to_cloud,
 )
 app.title = "college-onboard-platform"
 app.description = "API for interacting with the Agent college-onboard-platform"
 
 # Include endpoints router
 app.include_router(router)
+
+# Remove default root route redirection to playground UI
+app.router.routes = [r for r in app.router.routes if not hasattr(r, "path") or r.path != "/"]
+
+# Mount static files directory
+static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
+os.makedirs(static_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+@app.get("/")
+def read_index():
+    return FileResponse(os.path.join(static_dir, "index.html"))
+
 
 # Ambient Background Operator definition
 async def ambient_background_worker():

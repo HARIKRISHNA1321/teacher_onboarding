@@ -16,3 +16,9 @@ PINECONE_ENV = os.getenv("PINECONE_ENV", "")
 HR_EMAIL = os.getenv("HR_EMAIL", "hr@pes.edu")
 SMTP_TOKEN = os.getenv("SMTP_TOKEN", "mock-smtp-token")
 CALENDAR_TOKEN = os.getenv("CALENDAR_TOKEN", "mock-calendar-token")
+
+# SMTP Configurations
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "hr@pes.edu")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "mock-password")
