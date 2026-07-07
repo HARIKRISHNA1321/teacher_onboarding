@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Any, Dict, Optional, List
 import json
 import os
 import datetime
+import secrets
 from app.core.privacy import DataMaskingMiddleware
 from app.core.local_storage import LocalStateStore
+
 
 router = APIRouter()
 
@@ -204,8 +206,66 @@ def chatbot_endpoint(req: ChatRequest) -> dict:
     
     return {"response": answer}
 
+def send_welcome_email_task(email: str, username: str, name: str, password: str):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    import logging
+    from app.core.config import SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD
+
+    logging.info(f"Preparing to send credentials welcome email to {email}")
+
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }}
+        .card {{ background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 30px; max-width: 600px; margin: auto; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }}
+        h2 {{ color: #58a6ff; margin-top: 0; }}
+        p {{ line-height: 1.6; }}
+        .credentials {{ background: rgba(255, 255, 255, 0.08); padding: 15px; border-radius: 8px; border-left: 4px solid #58a6ff; font-family: monospace; margin: 20px 0; }}
+        .footer {{ font-size: 0.8em; color: #8b949e; text-align: center; margin-top: 30px; }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Welcome to PES University, {name}!</h2>
+        <p>Dear Faculty Member,</p>
+        <p>We are thrilled to welcome you to the PES University family. Your portal credentials have been successfully provisioned. Please log in using the details below:</p>
+        <div class="credentials">
+            <strong>Portal URL:</strong> http://localhost:8000<br>
+            <strong>Username:</strong> {username}<br>
+            <strong>Password:</strong> {password}
+        </div>
+        <p>After logging in, you will be guided through our onboarding workspace to upload your credentials and check university policy guidelines.</p>
+        <p>Best Regards,<br>HR Department<br>PES University</p>
+        <div class="footer">
+            This is an automated onboarding email. Please do not reply directly.
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Welcome to PES University - Portal Credentials"
+        msg["From"] = SMTP_USERNAME
+        msg["To"] = email
+        msg.attach(MIMEText(html_content, "html"))
+        
+        print(f"[DEBUG SMTP] Destination email address: {email}")
+        print('SMTP Connection Attempting...')
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
+            server.starttls()
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.sendmail(SMTP_USERNAME, email, msg.as_string())
+        logging.info(f"Successfully dispatched welcome email to {email}")
+    except Exception as e:
+        logging.error(f"Failed to dispatch welcome email to {email}: {e}")
+
 @router.post("/api/action")
-def trigger_action(req: ActionRequest) -> dict:
+def trigger_action(req: ActionRequest, background_tasks: BackgroundTasks) -> dict:
     store = LocalStateStore()
     state = store.load_state()
     if not state or "teachers" not in state:
@@ -215,17 +275,23 @@ def trigger_action(req: ActionRequest) -> dict:
     payload = req.payload
 
     if action == "add_teacher":
-        username = payload.get("username")
+        email = payload.get("email")
+        if not email:
+            raise HTTPException(status_code=400, detail="Email is required.")
+        username = email
         if username in state["teachers"]:
-            raise HTTPException(status_code=400, detail="Teacher username already exists.")
+            raise HTTPException(status_code=400, detail="Teacher with this email already exists.")
         
+        name = payload.get("name")
+        password = secrets.token_urlsafe(10)
+
         state["teachers"][username] = {
-            "name": payload.get("name"),
-            "email": payload.get("email"),
+            "name": name,
+            "email": email,
             "department": payload.get("department", "CSE"),
             "designation": payload.get("designation", "Assistant Professor"),
             "username": username,
-            "password": payload.get("password", "password"),
+            "password": password,
             "seating_info": "Not Allotted",
             "attendance": [
                 {"date": "2026-06-10", "status": "Absent", "reason": "Personal Leave"},
@@ -240,7 +306,8 @@ def trigger_action(req: ActionRequest) -> dict:
             "policy_brief": "Pending document upload and policy checker run.",
             "leave_balance": 30
         }
-        write_log("HR_AGENT", f"New teacher profile created: {username} ({payload.get('name')})")
+        write_log("HR_AGENT", f"New teacher profile created: {username} ({name})")
+        background_tasks.add_task(send_welcome_email_task, email=email, username=username, name=name, password=password)
 
     elif action == "update_teacher":
         username = payload.get("username")

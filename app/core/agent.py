@@ -147,13 +147,26 @@ async def credential_agent(ctx: Context, node_input: Any) -> Event:
     from email.mime.text import MIMEText
     import logging
     import asyncio
+    import secrets
     from app.core.config import SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD
 
     email = ctx.state.get("email") or "jane.doe@pes.edu"
-    username = ctx.state.get("username") or "teacher"
-    password = ctx.state.get("password") or "password"
+    username = email
+    
+    # Attempt to load existing credentials if they exist
+    existing_password = ctx.state.get("password")
+    local_store = LocalStateStore()
+    current_state = local_store.load_state()
+    if not existing_password and current_state and "teachers" in current_state:
+        for t_username, t_data in current_state["teachers"].items():
+            if t_data.get("email") == email and t_data.get("password"):
+                existing_password = t_data.get("password")
+                break
+
+    password = existing_password or secrets.token_urlsafe(10)
     name = ctx.state.get("candidate_name") or "Dr. Jane Doe"
 
+    print(f"[CREDENTIALS GENERATED] Username: {username}, Target Email: {email}")
     logging.info(f"Preparing to send credentials welcome email to {email}")
 
     html_content = f"""<!DOCTYPE html>
@@ -201,7 +214,7 @@ async def credential_agent(ctx: Context, node_input: Any) -> Event:
             
             print('SMTP Connection Attempting...')
             # Connect to SMTP with TLS enabled
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
                 server.starttls()
                 server.login(SMTP_USERNAME, SMTP_PASSWORD)
                 server.sendmail(SMTP_USERNAME, email, msg.as_string())
@@ -219,13 +232,23 @@ async def credential_agent(ctx: Context, node_input: Any) -> Event:
 
     state_updates = {
         "credentials_sent": True,
-        "active_stage": "Credentials-Sent"
+        "active_stage": "Credentials-Sent",
+        "username": username,
+        "password": password
     }
     local_store = LocalStateStore()
     current_state = local_store.load_state()
     current_state.update(state_updates)
-    if "teachers" in current_state and "teacher" in current_state["teachers"]:
-        current_state["teachers"]["teacher"].update(state_updates)
+    
+    # Update Context state so downstream workflow nodes have access
+    for k, v in state_updates.items():
+        ctx.state[k] = v
+
+    if "teachers" in current_state:
+        for t_username, t_data in current_state["teachers"].items():
+            if t_data.get("email") == email:
+                t_data.update(state_updates)
+                break
     local_store.save_state(current_state)
 
     msg = f"Credentials Generated: Welcome email successfully dispatched via SMTP with TLS to {email}."

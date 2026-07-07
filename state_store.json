@@ -30,84 +30,6 @@
     }
   ],
   "teachers": {
-    "jagan": {
-      "name": "Jagan",
-      "email": "jaganmohanam636145@gmail.com",
-      "department": "Computer science and engineering",
-      "designation": "Assistant",
-      "username": "jagan",
-      "password": "password",
-      "seating_info": "Room 620, Desk A",
-      "attendance": [
-        {
-          "date": "2026-06-10",
-          "status": "Absent",
-          "reason": "Personal Leave"
-        },
-        {
-          "date": "2026-06-20",
-          "status": "Absent",
-          "reason": "Medical Leave"
-        }
-      ],
-      "documents": [],
-      "projects": [],
-      "schedule": [
-        {
-          "day": "Tuesday",
-          "time": "10:00 AM - 11:30 AM",
-          "class": "CSE-C",
-          "subject": "Database Systems"
-        },
-        {
-          "day": "Thursday",
-          "time": "02:00 PM - 03:30 PM",
-          "class": "CSE-C",
-          "subject": "Database Systems"
-        }
-      ],
-      "policy_brief": "Pending document upload and policy checker run.",
-      "leave_balance": 30
-    },
-    "harikrishna": {
-      "name": "Harikrishna",
-      "email": "1321harikrishna@gmail.com",
-      "department": "Computer science and engineering",
-      "designation": "Assistant Professor",
-      "username": "harikrishna",
-      "password": "password",
-      "seating_info": "Not Allotted",
-      "attendance": [
-        {
-          "date": "2026-06-10",
-          "status": "Absent",
-          "reason": "Personal Leave"
-        },
-        {
-          "date": "2026-06-20",
-          "status": "Absent",
-          "reason": "Medical Leave"
-        }
-      ],
-      "documents": [],
-      "projects": [],
-      "schedule": [
-        {
-          "day": "Tuesday",
-          "time": "10:00 AM - 11:30 AM",
-          "class": "CSE-C",
-          "subject": "Database Systems"
-        },
-        {
-          "day": "Thursday",
-          "time": "02:00 PM - 03:30 PM",
-          "class": "CSE-C",
-          "subject": "Database Systems"
-        }
-      ],
-      "policy_brief": "Pending document upload and policy checker run.",
-      "leave_balance": 30
-    },
     "hari": {
       "name": "hari",
       "email": "1321harikrishna@gmail.com",
@@ -164,6 +86,84 @@
       "designation": "Assistant Professor",
       "username": "gaurav",
       "password": "password",
+      "seating_info": "Not Allotted",
+      "attendance": [
+        {
+          "date": "2026-06-10",
+          "status": "Absent",
+          "reason": "Personal Leave"
+        },
+        {
+          "date": "2026-06-20",
+          "status": "Absent",
+          "reason": "Medical Leave"
+        }
+      ],
+      "documents": [],
+      "projects": [],
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:00 AM - 11:30 AM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        },
+        {
+          "day": "Thursday",
+          "time": "02:00 PM - 03:30 PM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        }
+      ],
+      "policy_brief": "Pending document upload and policy checker run.",
+      "leave_balance": 30
+    },
+    "gauravb2188@gmail.com": {
+      "name": "new gaurav",
+      "email": "gauravb2188@gmail.com",
+      "department": "Computer science and engineering",
+      "designation": "Assistant Professor",
+      "username": "gauravb2188@gmail.com",
+      "password": "7eidgLpBIuryvw",
+      "seating_info": "Not Allotted",
+      "attendance": [
+        {
+          "date": "2026-06-10",
+          "status": "Absent",
+          "reason": "Personal Leave"
+        },
+        {
+          "date": "2026-06-20",
+          "status": "Absent",
+          "reason": "Medical Leave"
+        }
+      ],
+      "documents": [],
+      "projects": [],
+      "schedule": [
+        {
+          "day": "Tuesday",
+          "time": "10:00 AM - 11:30 AM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        },
+        {
+          "day": "Thursday",
+          "time": "02:00 PM - 03:30 PM",
+          "class": "CSE-C",
+          "subject": "Database Systems"
+        }
+      ],
+      "policy_brief": "Pending document upload and policy checker run.",
+      "leave_balance": 30
+    },
+    "jaganmohanam636145@gmail.com": {
+      "name": "jagan",
+      "email": "jaganmohanam636145@gmail.com",
+      "department": "Computer science and engineering",
+      "designation": "aoaoao",
+      "username": "jaganmohanam636145@gmail.com",
+      "password": "VXxIGey-9zoo4w",
       "seating_info": "Not Allotted",
       "attendance": [
         {

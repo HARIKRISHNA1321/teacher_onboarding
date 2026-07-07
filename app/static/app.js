@@ -335,9 +335,7 @@ hrAddTeacherForm.addEventListener('submit', async (e) => {
         name: document.getElementById('add-name').value,
         email: document.getElementById('add-email').value,
         department: document.getElementById('add-dept').value,
-        designation: document.getElementById('add-desig').value,
-        username: document.getElementById('add-username').value.trim(),
-        password: document.getElementById('add-password').value
+        designation: document.getElementById('add-desig').value
     };
 
     try {
