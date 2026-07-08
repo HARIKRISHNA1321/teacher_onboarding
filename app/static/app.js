@@ -136,6 +136,20 @@ logoutBtn.addEventListener('click', () => {
     usernameInput.value = '';
     passwordInput.value = '';
     clearInterval(pollInterval);
+
+    // Clear chatbot history
+    const fsChatBody = document.getElementById('fullscreen-chat-body');
+    if (fsChatBody) {
+        fsChatBody.innerHTML = `
+            <div class="chat-message bot">
+                Ask me anything about PES
+            </div>
+        `;
+    }
+    const fsChatInput = document.getElementById('fullscreen-chat-input');
+    if (fsChatInput) {
+        fsChatInput.value = '';
+    }
 });
 
 // Periodic Synchronization
@@ -251,17 +265,70 @@ function updateDashboardView() {
             attendanceBody.innerHTML = '<tr><td colspan="3" class="text-muted text-center">Perfect attendance record</td></tr>';
         }
 
-        // Submitted Docs
-        const submittedDocsList = document.getElementById('submitted-doc-list');
-        submittedDocsList.innerHTML = '';
-        if (teacher.documents && teacher.documents.length > 0) {
-            teacher.documents.forEach(doc => {
-                const li = document.createElement('li');
-                li.innerHTML = `📄 ${doc} <span class="badge badge-success" style="float:right">Uploaded</span>`;
-                submittedDocsList.appendChild(li);
-            });
-        } else {
-            submittedDocsList.innerHTML = '<li class="text-muted">No documents submitted yet</li>';
+        // Handle staged/submitted documents view
+        const cardAadhaar = document.getElementById('card-aadhaar');
+        const cardAppointment = document.getElementById('card-appointment');
+        const cardTet = document.getElementById('card-tet');
+        const statusAadhaar = document.getElementById('status-aadhaar');
+        const statusAppointment = document.getElementById('status-appointment');
+        const statusTet = document.getElementById('status-tet');
+        const batchSubmitBtn = document.getElementById('batch-submit-btn');
+
+        if (cardAadhaar || cardAppointment || cardTet) {
+            const statuses = teacher.document_statuses || {
+                aadhaar_card: "unuploaded",
+                appointment_letter: "unuploaded",
+                teacher_eligibility_test: "unuploaded"
+            };
+            const paths = teacher.document_paths || {
+                aadhaar_card: "",
+                appointment_letter: "",
+                teacher_eligibility_test: ""
+            };
+
+            function renderTeacherDoc(card, statusElem, docKey) {
+                if (!card || !statusElem) return;
+                const status = statuses[docKey];
+                const path = paths[docKey];
+                const fileInput = card.querySelector('input[type="file"]');
+                const dropArea = card.querySelector('.upload-zone-droparea') || card;
+                const button = card.querySelector('.upload-btn-neat');
+
+                if (status === 'pending' || status === 'approved') {
+                    card.classList.add('staged');
+                    statusElem.innerText = path || 'File pending review';
+                    dropArea.style.pointerEvents = 'none';
+                    if (button) {
+                        button.disabled = true;
+                        button.innerHTML = `<span>${status === 'approved' ? 'Approved ✓' : 'Pending Review'}</span>`;
+                        button.style.pointerEvents = 'none';
+                    }
+                } else {
+                    card.classList.remove('staged');
+                    dropArea.style.pointerEvents = 'auto';
+                    if (button) {
+                        button.disabled = false;
+                        button.innerHTML = `<span>Choose PDF</span><span class="upload-btn-arrow">📤</span>`;
+                        button.style.pointerEvents = 'auto';
+                    }
+
+                    if (status === 'rejected') {
+                        statusElem.innerHTML = `<span style="color:#ff6b6b; font-weight:500;">Rejected. Please re-upload.</span>`;
+                    } else {
+                        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                            card.classList.add('staged');
+                            statusElem.innerText = fileInput.files[0].name;
+                        } else {
+                            statusElem.innerText = 'No file selected';
+                        }
+                    }
+                }
+            }
+
+            renderTeacherDoc(cardAadhaar, statusAadhaar, 'aadhaar_card');
+            renderTeacherDoc(cardAppointment, statusAppointment, 'appointment_letter');
+            renderTeacherDoc(cardTet, statusTet, 'teacher_eligibility_test');
+            updateSubmitButtonState();
         }
 
     }
@@ -269,28 +336,138 @@ function updateDashboardView() {
     // 3. Render HR Views
     if (currentRole === 'hr') {
         const teachersListContainer = document.getElementById('hr-teachers-list-view');
-        teachersListContainer.innerHTML = '';
+        if (teachersListContainer) teachersListContainer.innerHTML = '';
+
+        let pendingTeachersCount = 0;
 
         Object.keys(systemState.teachers).forEach(uname => {
             const t = systemState.teachers[uname];
-            const div = document.createElement('div');
-            div.className = 'teacher-card-item';
-            div.innerHTML = `
-                <div class="teacher-card-info">
-                    <h4>${t.name} (@${t.username})</h4>
-                    <p>${t.designation} - ${t.department}</p>
-                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 2px;">Email: ${t.email || 'N/A'}</p>
-                    <p style="font-size:0.75rem; color:var(--text-muted)">Seating: ${t.seating_info}</p>
-                </div>
-                <button class="btn btn-secondary btn-sm edit-profile-btn" data-username="${t.username}">Edit Profile</button>
-            `;
-            // Trigger Edit profile click
-            div.querySelector('.edit-profile-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                openEditDrawer(t.username);
-            });
-            teachersListContainer.appendChild(div);
+            
+            // Count teachers waiting for verification
+            if (t.documents && t.documents.length > 0) {
+                const verifiedDocs = t.verified_documents || [];
+                const hasUnverified = t.documents.some(d => !verifiedDocs.includes(d));
+                if (hasUnverified) {
+                    pendingTeachersCount++;
+                }
+            }
+
+            if (teachersListContainer) {
+                const div = document.createElement('div');
+                div.className = 'teacher-card-item';
+                div.innerHTML = `
+                    <div class="teacher-card-info">
+                        <h4>${t.name} (@${t.username})</h4>
+                        <p>${t.designation} - ${t.department}</p>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom: 2px;">Email: ${t.email || 'N/A'}</p>
+                        <p style="font-size:0.75rem; color:var(--text-muted)">Seating: ${t.seating_info}</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm edit-profile-btn" data-username="${t.username}">Edit Profile</button>
+                `;
+                // Trigger Edit profile click
+                div.querySelector('.edit-profile-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditDrawer(t.username);
+                });
+                teachersListContainer.appendChild(div);
+            }
         });
+
+        // Update Verification Badge
+        const hrVerificationTab = document.getElementById('hr-verification-tab');
+        if (hrVerificationTab) {
+            hrVerificationTab.innerHTML = `Verification [${pendingTeachersCount}]`;
+        }
+
+        // Render Verification Panel View
+        const hrVerificationList = document.getElementById('hr-verification-list');
+        if (hrVerificationList) {
+            hrVerificationList.innerHTML = '';
+            let hasAnyDocs = false;
+
+            Object.keys(systemState.teachers).forEach(uname => {
+                const t = systemState.teachers[uname];
+                if (t.documents && t.documents.length > 0) {
+                    hasAnyDocs = true;
+                    const sec = document.createElement('div');
+                    sec.className = 'verification-teacher-section mt-3';
+
+                    const aadhaar = t.documents[0] || 'Not Uploaded';
+                    const appointment = t.documents[1] || 'Not Uploaded';
+                    const tet = t.documents[2] || 'Not Uploaded';
+
+                    const verifiedDocs = t.verified_documents || [];
+                    const isAadhaarVerified = verifiedDocs.includes(aadhaar);
+                    const isAppointmentVerified = verifiedDocs.includes(appointment);
+                    const isTetVerified = verifiedDocs.includes(tet);
+
+                    sec.innerHTML = `
+                        <div class="verification-teacher-header">${t.name} (@${t.username})</div>
+                        <div class="verification-docs-grid">
+                            <div class="verification-doc-card ${t.documents[0] ? 'uploaded' : ''}">
+                                <div class="verification-doc-emoji">🪪</div>
+                                <div class="verification-doc-title">Aadhaar Card</div>
+                                <div class="verification-doc-file">${aadhaar}</div>
+                                ${t.documents[0] ? `
+                                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%;">
+                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${aadhaar}')">View</button>
+                                        ${isAadhaarVerified ? `
+                                            <button class="btn btn-success btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" disabled>Approved ✓</button>
+                                        ` : `
+                                            <div style="display: flex; gap: 6px; width: 100%;">
+                                                <button class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.75rem; padding: 4px 6px;" onclick="verifyDoc('${t.username}', '${aadhaar}', 'aadhaar_card', true)">Approve</button>
+                                                <button class="btn btn-danger btn-sm" style="flex: 1; font-size: 0.75rem; padding: 4px 6px;" onclick="verifyDoc('${t.username}', '${aadhaar}', 'aadhaar_card', false)">Reject</button>
+                                            </div>
+                                        `}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="verification-doc-card ${t.documents[1] ? 'uploaded' : ''}">
+                                <div class="verification-doc-emoji">📄</div>
+                                <div class="verification-doc-title">Appointment Letter</div>
+                                <div class="verification-doc-file">${appointment}</div>
+                                ${t.documents[1] ? `
+                                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%;">
+                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${appointment}')">View</button>
+                                        ${isAppointmentVerified ? `
+                                            <button class="btn btn-success btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" disabled>Approved ✓</button>
+                                        ` : `
+                                            <div style="display: flex; gap: 6px; width: 100%;">
+                                                <button class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.75rem; padding: 4px 6px;" onclick="verifyDoc('${t.username}', '${appointment}', 'appointment_letter', true)">Approve</button>
+                                                <button class="btn btn-danger btn-sm" style="flex: 1; font-size: 0.75rem; padding: 4px 6px;" onclick="verifyDoc('${t.username}', '${appointment}', 'appointment_letter', false)">Reject</button>
+                                            </div>
+                                        `}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="verification-doc-card ${t.documents[2] ? 'uploaded' : ''}">
+                                <div class="verification-doc-emoji">🎓</div>
+                                <div class="verification-doc-title">Teacher Eligibility Test</div>
+                                <div class="verification-doc-file">${tet}</div>
+                                ${t.documents[2] ? `
+                                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%;">
+                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${tet}')">View</button>
+                                        ${isTetVerified ? `
+                                            <button class="btn btn-success btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" disabled>Approved ✓</button>
+                                        ` : `
+                                            <div style="display: flex; gap: 6px; width: 100%;">
+                                                <button class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.75rem; padding: 4px 6px;" onclick="verifyDoc('${t.username}', '${tet}', 'teacher_eligibility_test', true)">Approve</button>
+                                                <button class="btn btn-danger btn-sm" style="flex: 1; font-size: 0.75rem; padding: 4px 6px;" onclick="verifyDoc('${t.username}', '${tet}', 'teacher_eligibility_test', false)">Reject</button>
+                                            </div>
+                                        `}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    hrVerificationList.appendChild(sec);
+                }
+            });
+
+            if (!hasAnyDocs) {
+                hrVerificationList.innerHTML = '<p class="text-muted text-center mt-3">No pending documents to verify.</p>';
+            }
+        }
     }
 
     // 4. Render Admin / Chairperson Views
@@ -371,6 +548,53 @@ hrAddTeacherForm.addEventListener('submit', async (e) => {
     }
 });
 
+window.viewDoc = function(docName) {
+    const win = window.open("", "_blank");
+    win.document.write(`
+        <html>
+        <head>
+            <title>Preview: \${docName}</title>
+            <style>
+                body { background: #0d1117; color: #c9d1d9; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                .container { border: 1px solid #30363d; padding: 2rem; border-radius: 8px; background: #161b22; text-align: center; max-width: 500px; }
+                h2 { color: #58a6ff; }
+                p { color: #8b949e; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>Document Preview</h2>
+                <p><strong>File Name:</strong> \${docName}</p>
+                <p style="font-size: 0.9rem;">This is a simulated verification view for administrative preview of the submitted PDF asset.</p>
+                <button onclick="window.close()" style="background: #21262d; border: 1px solid #30363d; color: #c9d1d9; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; margin-top: 1rem;">Close Preview</button>
+            </div>
+        </body>
+        </html>
+    `);
+};
+
+window.verifyDoc = async function(username, docName, docType, approved) {
+    try {
+        const res = await fetch('/api/action', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'verify_document',
+                payload: { username, document_name: docName, doc_type: docType, approved: approved }
+            })
+        });
+        if (res.ok) {
+            alert(approved ? 'Document approved successfully' : 'Document rejected successfully');
+            syncStateData();
+        } else {
+            alert('Failed to evaluate document');
+        }
+    } catch(err) {
+        console.error(err);
+        alert('Server communication error.');
+    }
+};
+
 // Open edit drawer helper
 const editDrawer = document.getElementById('hr-edit-drawer');
 const closeDrawerBtn = document.getElementById('close-drawer-btn');
@@ -385,6 +609,30 @@ function openEditDrawer(username) {
     document.getElementById('edit-email').value = t.email;
     document.getElementById('edit-dept').value = t.department;
     document.getElementById('edit-desig').value = t.designation;
+
+    // Render verification documents inside the drawer
+    const drawerDocs = document.getElementById('hr-drawer-verification-docs');
+    if (drawerDocs) {
+        drawerDocs.innerHTML = '';
+        if (t.documents && t.documents.length > 0) {
+            t.documents.forEach(doc => {
+                const item = document.createElement('div');
+                item.style.padding = '8px 12px';
+                item.style.background = 'rgba(255, 255, 255, 0.04)';
+                item.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+                item.style.borderRadius = '6px';
+                item.style.fontSize = '0.85rem';
+                item.style.marginTop = '6px';
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.innerHTML = `<span>📄 ${doc}</span><span style="color:#56d364; font-weight:500;">✓ Ready</span>`;
+                drawerDocs.appendChild(item);
+            });
+        } else {
+            drawerDocs.innerHTML = '<div class="text-muted" style="font-size:0.85rem; padding: 5px 0;">No documents uploaded.</div>';
+        }
+    }
 
     editDrawer.classList.remove('hidden');
 }
@@ -455,32 +703,183 @@ deleteTeacherBtn.addEventListener('click', async (e) => {
     }
 });
 
-// Candidate document upload action
-const submitDocBtn = document.getElementById('submit-doc-btn');
-const documentInput = document.getElementById('document-input');
-submitDocBtn.addEventListener('click', async () => {
-    const docName = documentInput.value.trim();
-    if (!docName) return alert('Please enter a document filename.');
+// Candidate batch document upload action
+const fileAadhaar = document.getElementById('file-aadhaar');
+const fileAppointment = document.getElementById('file-appointment');
+const fileTet = document.getElementById('file-tet');
+const batchSubmitBtn = document.getElementById('batch-submit-btn');
 
-    try {
-        const res = await fetch('/api/action', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'upload_document',
-                payload: { username: currentUser, document_name: docName }
-            })
-        });
-        if (res.ok) {
-            documentInput.value = '';
-            syncStateData();
+function updateSubmitButtonState() {
+    if (!batchSubmitBtn) return;
+
+    // Fetch statuses from teacher data in systemState
+    const teacher = (systemState.teachers && systemState.teachers[currentUser]) ? systemState.teachers[currentUser] : {};
+    const statuses = teacher.document_statuses || {};
+
+    const aadhaarReady = (statuses['aadhaar_card'] === 'pending' || statuses['aadhaar_card'] === 'approved') || 
+                         (fileAadhaar && fileAadhaar.files && fileAadhaar.files.length > 0);
+                         
+    const appointmentReady = (statuses['appointment_letter'] === 'pending' || statuses['appointment_letter'] === 'approved') || 
+                             (fileAppointment && fileAppointment.files && fileAppointment.files.length > 0);
+                             
+    const tetReady = (statuses['teacher_eligibility_test'] === 'pending' || statuses['teacher_eligibility_test'] === 'approved') || 
+                     (fileTet && fileTet.files && fileTet.files.length > 0);
+
+    const hasNewAadhaar = fileAadhaar && fileAadhaar.files && fileAadhaar.files.length > 0;
+    const hasNewAppointment = fileAppointment && fileAppointment.files && fileAppointment.files.length > 0;
+    const hasNewTet = fileTet && fileTet.files && fileTet.files.length > 0;
+
+    const hasAnyNewFile = hasNewAadhaar || hasNewAppointment || hasNewTet;
+    const allThreeReady = aadhaarReady && appointmentReady && tetReady;
+
+    if (allThreeReady && hasAnyNewFile) {
+        batchSubmitBtn.disabled = false;
+        batchSubmitBtn.innerText = 'Submit';
+    } else {
+        batchSubmitBtn.disabled = true;
+        
+        // If all three documents are already successfully uploaded and pending/approved
+        const allSubmitted = (statuses['aadhaar_card'] === 'pending' || statuses['aadhaar_card'] === 'approved') &&
+                             (statuses['appointment_letter'] === 'pending' || statuses['appointment_letter'] === 'approved') &&
+                             (statuses['teacher_eligibility_test'] === 'pending' || statuses['teacher_eligibility_test'] === 'approved');
+        if (allSubmitted) {
+            batchSubmitBtn.innerText = 'Submitted';
         } else {
-            alert('Upload failed');
+            batchSubmitBtn.innerText = 'Submit';
         }
-    } catch (e) {
-        alert('Server communication error.');
     }
-});
+}
+
+if (fileAadhaar) {
+    const card = document.getElementById('card-aadhaar');
+    const button = card ? card.querySelector('.upload-btn-neat') : null;
+    if (button) {
+        button.addEventListener('click', (e) => {
+            const teacher = (systemState.teachers && systemState.teachers[currentUser]) ? systemState.teachers[currentUser] : {};
+            const statuses = teacher.document_statuses || {};
+            const status = statuses['aadhaar_card'];
+            if (status === 'pending' || status === 'approved') {
+                e.preventDefault();
+                return;
+            }
+            fileAadhaar.click();
+        });
+    }
+    fileAadhaar.addEventListener('change', () => {
+        const status = document.getElementById('status-aadhaar');
+        if (fileAadhaar.files.length > 0) {
+            if (card) card.classList.add('staged');
+            if (status) status.innerText = fileAadhaar.files[0].name;
+        } else {
+            if (card) card.classList.remove('staged');
+            if (status) status.innerText = 'No file selected';
+        }
+        updateSubmitButtonState();
+    });
+}
+if (fileAppointment) {
+    const card = document.getElementById('card-appointment');
+    const button = card ? card.querySelector('.upload-btn-neat') : null;
+    if (button) {
+        button.addEventListener('click', (e) => {
+            const teacher = (systemState.teachers && systemState.teachers[currentUser]) ? systemState.teachers[currentUser] : {};
+            const statuses = teacher.document_statuses || {};
+            const status = statuses['appointment_letter'];
+            if (status === 'pending' || status === 'approved') {
+                e.preventDefault();
+                return;
+            }
+            fileAppointment.click();
+        });
+    }
+    fileAppointment.addEventListener('change', () => {
+        const status = document.getElementById('status-appointment');
+        if (fileAppointment.files.length > 0) {
+            if (card) card.classList.add('staged');
+            if (status) status.innerText = fileAppointment.files[0].name;
+        } else {
+            if (card) card.classList.remove('staged');
+            if (status) status.innerText = 'No file selected';
+        }
+        updateSubmitButtonState();
+    });
+}
+if (fileTet) {
+    const card = document.getElementById('card-tet');
+    const button = card ? card.querySelector('.upload-btn-neat') : null;
+    if (button) {
+        button.addEventListener('click', (e) => {
+            const teacher = (systemState.teachers && systemState.teachers[currentUser]) ? systemState.teachers[currentUser] : {};
+            const statuses = teacher.document_statuses || {};
+            const status = statuses['teacher_eligibility_test'];
+            if (status === 'pending' || status === 'approved') {
+                e.preventDefault();
+                return;
+            }
+            fileTet.click();
+        });
+    }
+    fileTet.addEventListener('change', () => {
+        const status = document.getElementById('status-tet');
+        if (fileTet.files.length > 0) {
+            if (card) card.classList.add('staged');
+            if (status) status.innerText = fileTet.files[0].name;
+        } else {
+            if (card) card.classList.remove('staged');
+            if (status) status.innerText = 'No file selected';
+        }
+        updateSubmitButtonState();
+    });
+}
+
+if (batchSubmitBtn) {
+    batchSubmitBtn.addEventListener('click', async () => {
+        batchSubmitBtn.disabled = true;
+        batchSubmitBtn.innerText = 'Uploading...';
+
+        const filesToUpload = [];
+        if (fileAadhaar && fileAadhaar.files && fileAadhaar.files.length > 0) {
+            filesToUpload.push({ name: fileAadhaar.files[0].name, type: 'aadhaar_card' });
+        }
+        if (fileAppointment && fileAppointment.files && fileAppointment.files.length > 0) {
+            filesToUpload.push({ name: fileAppointment.files[0].name, type: 'appointment_letter' });
+        }
+        if (fileTet && fileTet.files && fileTet.files.length > 0) {
+            filesToUpload.push({ name: fileTet.files[0].name, type: 'teacher_eligibility_test' });
+        }
+
+        try {
+            let success = true;
+            for (const item of filesToUpload) {
+                const res = await fetch('/api/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'upload_document',
+                        payload: { username: currentUser, document_name: item.name, doc_type: item.type }
+                    })
+                });
+                if (!res.ok) success = false;
+            }
+
+            if (success) {
+                // Clear the input fields so they don't count as "newly staged" anymore
+                if (fileAadhaar) fileAadhaar.value = '';
+                if (fileAppointment) fileAppointment.value = '';
+                if (fileTet) fileTet.value = '';
+                
+                alert('Documents submitted successfully!');
+                syncStateData();
+            } else {
+                alert('One or more document uploads failed.');
+                updateSubmitButtonState();
+            }
+        } catch (e) {
+            alert('Server communication error.');
+            updateSubmitButtonState();
+        }
+    });
+}
 
 // Admin Allotment Form
 const adminAllotmentForm = document.getElementById('admin-allotment-form');

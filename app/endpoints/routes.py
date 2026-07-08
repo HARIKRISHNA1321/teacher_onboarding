@@ -40,6 +40,59 @@ def get_state() -> dict:
     if not state or "teachers" not in state:
         state = initialize_default_state()
         store.save_state(state)
+        return state
+
+    modified = False
+    for username, teacher in state.get("teachers", {}).items():
+        if "document_statuses" not in teacher or not teacher["document_statuses"]:
+            teacher["document_statuses"] = {
+                "aadhaar_card": "unuploaded",
+                "appointment_letter": "unuploaded",
+                "teacher_eligibility_test": "unuploaded"
+            }
+            modified = True
+            
+        if "document_paths" not in teacher or not teacher["document_paths"]:
+            teacher["document_paths"] = {
+                "aadhaar_card": "",
+                "appointment_letter": "",
+                "teacher_eligibility_test": ""
+            }
+            modified = True
+
+        uploaded = teacher.get("documents", [])
+        verified = teacher.get("verified_documents", [])
+
+        if len(uploaded) >= 1:
+            doc_name = uploaded[0]
+            teacher["document_paths"]["aadhaar_card"] = doc_name
+            if doc_name in verified:
+                teacher["document_statuses"]["aadhaar_card"] = "approved"
+            elif teacher["document_statuses"]["aadhaar_card"] not in ["approved", "rejected"]:
+                teacher["document_statuses"]["aadhaar_card"] = "pending"
+            modified = True
+
+        if len(uploaded) >= 2:
+            doc_name = uploaded[1]
+            teacher["document_paths"]["appointment_letter"] = doc_name
+            if doc_name in verified:
+                teacher["document_statuses"]["appointment_letter"] = "approved"
+            elif teacher["document_statuses"]["appointment_letter"] not in ["approved", "rejected"]:
+                teacher["document_statuses"]["appointment_letter"] = "pending"
+            modified = True
+
+        if len(uploaded) >= 3:
+            doc_name = uploaded[2]
+            teacher["document_paths"]["teacher_eligibility_test"] = doc_name
+            if doc_name in verified:
+                teacher["document_statuses"]["teacher_eligibility_test"] = "approved"
+            elif teacher["document_statuses"]["teacher_eligibility_test"] not in ["approved", "rejected"]:
+                teacher["document_statuses"]["teacher_eligibility_test"] = "pending"
+            modified = True
+
+    if modified:
+        store.save_state(state)
+
     return state
 
 def initialize_default_state() -> dict:
@@ -229,7 +282,7 @@ def send_welcome_email_task(email: str, username: str, name: str, password: str)
 </head>
 <body>
     <div class="card">
-        <h2>Welcome to PES University, {name}!</h2>
+        <h2>Welcome to PES University {name}!</h2>
         <p>Dear Faculty Member,</p>
         <p>We are thrilled to welcome you to the PES University family. Your portal credentials have been successfully provisioned. Please log in using the details below:</p>
         <div class="credentials">
@@ -263,6 +316,58 @@ def send_welcome_email_task(email: str, username: str, name: str, password: str)
         logging.info(f"Successfully dispatched welcome email to {email}")
     except Exception as e:
         logging.error(f"Failed to dispatch welcome email to {email}: {e}")
+
+
+def send_verification_email_task(email: str, name: str):
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    import logging
+    from app.core.config import SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD
+
+    logging.info(f"Preparing to send verification confirmation email to {email}")
+
+    html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }}
+        .card {{ background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 30px; max-width: 600px; margin: auto; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }}
+        h2 {{ color: #58a6ff; margin-top: 0; }}
+        p {{ line-height: 1.6; }}
+        .footer {{ font-size: 0.8em; color: #8b949e; text-align: center; margin-top: 30px; }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Documents Verified - PES University</h2>
+        <p>Dear Faculty Member,</p>
+        <p>We are pleased to inform you that all your submitted verification documents (Aadhaar Card, Appointment Letter, and Teacher Eligibility Test) have been successfully verified by our HR department.</p>
+        <p>You need to log in to the <a href="http://localhost:8000" style="color: #58a6ff;">PESU Academic portal</a> and check the <strong>PESU AI</strong> chatbot for a detailed brief on college policies.</p>
+        <p>Best Regards,<br>HR Department<br>PES University</p>
+        <div class="footer">
+            This is an automated onboarding email. Please do not reply directly.
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "Documents Verified - PES University Onboarding"
+        msg["From"] = SMTP_USERNAME
+        msg["To"] = email
+        msg.attach(MIMEText(html_content, "html"))
+        
+        print(f"[DEBUG SMTP] Destination email address: {email}")
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
+            server.starttls()
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.sendmail(SMTP_USERNAME, email, msg.as_string())
+        logging.info(f"Successfully dispatched verification email to {email}")
+    except Exception as e:
+        logging.error(f"Failed to dispatch verification email to {email}: {e}")
 
 @router.post("/api/action")
 def trigger_action(req: ActionRequest, background_tasks: BackgroundTasks) -> dict:
@@ -353,11 +458,20 @@ def trigger_action(req: ActionRequest, background_tasks: BackgroundTasks) -> dic
     elif action == "upload_document":
         username = payload.get("username")
         doc_name = payload.get("document_name")
+        doc_type = payload.get("doc_type", "aadhaar_card")
         if username not in state["teachers"]:
             raise HTTPException(status_code=404, detail="Teacher not found.")
         
-        if doc_name not in state["teachers"][username]["documents"]:
-            state["teachers"][username]["documents"].append(doc_name)
+        from app.core.agent import WorkflowState
+        teacher_data = state["teachers"][username]
+        matching_fields = {k: v for k, v in teacher_data.items() if k in WorkflowState.model_fields}
+        ws = WorkflowState(**matching_fields)
+        
+        if doc_name not in ws.documents:
+            ws.documents.append(doc_name)
+            
+        ws.update_document_upload_path(doc_type, doc_name)
+        state["teachers"][username].update(ws.model_dump())
         
         # Auto-update Pinecone check brief
         from app.tools.pinecone_rag import PineconeRAGService
@@ -365,6 +479,43 @@ def trigger_action(req: ActionRequest, background_tasks: BackgroundTasks) -> dic
         brief = pinecone_service.query_rules(doc_name)
         state["teachers"][username]["policy_brief"] = brief
         write_log("CANDIDATE_PORTAL", f"Uploaded document: {doc_name} for teacher {username}")
+
+    elif action == "verify_document":
+        username = payload.get("username")
+        doc_name = payload.get("document_name")
+        doc_type = payload.get("doc_type", "aadhaar_card")
+        approved = payload.get("approved", True)
+        if username not in state["teachers"]:
+            raise HTTPException(status_code=404, detail="Teacher not found.")
+        
+        from app.core.agent import WorkflowState
+        teacher_data = state["teachers"][username]
+        matching_fields = {k: v for k, v in teacher_data.items() if k in WorkflowState.model_fields}
+        ws = WorkflowState(**matching_fields)
+        
+        ws.evaluate_document_approval(doc_type, approved)
+        
+        if "verified_documents" not in state["teachers"][username]:
+            state["teachers"][username]["verified_documents"] = []
+            
+        if approved:
+            if doc_name not in state["teachers"][username]["verified_documents"]:
+                state["teachers"][username]["verified_documents"].append(doc_name)
+        else:
+            if doc_name in state["teachers"][username]["verified_documents"]:
+                state["teachers"][username]["verified_documents"].remove(doc_name)
+            if doc_name in ws.documents:
+                ws.documents.remove(doc_name)
+            ws.document_statuses[doc_type] = "rejected"
+            
+        state["teachers"][username].update(ws.model_dump())
+        write_log("HR_PORTAL", f"Evaluated document '{doc_name}' for teacher {username}: approved={approved}")
+
+        if ws.current_stage == "policy_rag_agent":
+            email = state["teachers"][username].get("email")
+            name = state["teachers"][username].get("name", "Faculty Member")
+            if email:
+                background_tasks.add_task(send_verification_email_task, email=email, name=name)
 
     else:
         raise HTTPException(status_code=400, detail="Invalid action")

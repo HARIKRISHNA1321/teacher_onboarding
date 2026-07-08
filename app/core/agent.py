@@ -43,6 +43,51 @@ class WorkflowState(BaseModel):
     email: str = ""
     username: str = ""
     password: str = ""
+    
+    # Verification Lifecycle fields
+    document_statuses: Dict[str, str] = Field(default_factory=lambda: {
+        "aadhaar_card": "unuploaded",
+        "appointment_letter": "unuploaded",
+        "teacher_eligibility_test": "unuploaded"
+    })
+    document_paths: Dict[str, str] = Field(default_factory=lambda: {
+        "aadhaar_card": "",
+        "appointment_letter": "",
+        "teacher_eligibility_test": ""
+    })
+    pending_tally: int = 0
+    current_stage: str = "document_collection"
+
+    def update_document_upload_path(self, doc_type: str, filepath: str):
+        """Sets document status to 'pending' and updates path/filename."""
+        if doc_type in self.document_statuses:
+            self.document_statuses[doc_type] = "pending"
+            self.document_paths[doc_type] = filepath
+            print(f"[STATE TRANSITION] Document '{doc_type}' uploaded: {filepath}. Status set to 'pending'.")
+            self.recalculate_pending_tally()
+
+    def evaluate_document_approval(self, doc_type: str, approved: bool):
+        """Approves or rejects a document, recalculates tally, and advances stage if all approved."""
+        status = "approved" if approved else "rejected"
+        if doc_type in self.document_statuses:
+            self.document_statuses[doc_type] = status
+            if not approved:
+                self.document_paths[doc_type] = "" # Clear path on rejection
+            print(f"[STATE TRANSITION] Document '{doc_type}' evaluation: {status}.")
+            self.recalculate_pending_tally()
+            self.check_all_approved_transition()
+
+    def recalculate_pending_tally(self):
+        """Counts documents with status 'pending'."""
+        self.pending_tally = sum(1 for status in self.document_statuses.values() if status == "pending")
+        print(f"[STATE METRIC] Recalculated pending tally: {self.pending_tally}")
+
+    def check_all_approved_transition(self):
+        """Advances current_stage if all three required documents are approved."""
+        all_approved = all(status == "approved" for status in self.document_statuses.values())
+        if all_approved:
+            self.current_stage = "policy_rag_agent"
+            print("[STATE TRANSITION] All documents approved! Advancing current_stage to 'policy_rag_agent'.")
 
 # --- 2. Workflow Routing and Node Implementations ---
 
@@ -183,7 +228,7 @@ async def credential_agent(ctx: Context, node_input: Any) -> Event:
 </head>
 <body>
     <div class="card">
-        <h2>Welcome to PES University, {name}!</h2>
+        <h2>Welcome to PES University {name}!</h2>
         <p>Dear Faculty Member,</p>
         <p>We are thrilled to welcome you to the PES University family. Your portal credentials have been successfully provisioned. Please log in using the details below:</p>
         <div class="credentials">

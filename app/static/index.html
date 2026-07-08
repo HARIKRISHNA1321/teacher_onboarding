@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PES University Academic Portal</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=1.0.12">
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap"
         rel="stylesheet">
@@ -94,6 +94,7 @@
                         <!-- HR Menu -->
                         <div id="hr-menu" class="menu-group hidden">
                             <button class="nav-tab active" data-tab="hr-teachers-list">Manage Teachers</button>
+                            <button class="nav-tab" data-tab="hr-verification" id="hr-verification-tab">Verification [0]</button>
                             <button class="nav-tab" data-tab="hr-add-teacher">Add New Teacher</button>
                         </div>
 
@@ -213,19 +214,67 @@
                     <!-- Submit Documents View -->
                     <div id="tab-candidate-documents" class="tab-pane hidden">
                         <h2>Document Submission Dashboard</h2>
-                        <p class="section-desc">Submit joining structural files (.pdf, .docx)</p>
-                        <div class="document-upload-form mt-3">
-                            <div class="form-group row-group">
-                                <input type="text" id="document-input" placeholder="e.g. Appointment_Letter.pdf"
-                                    class="input-inline">
-                                <button id="submit-doc-btn" class="btn btn-primary">Upload Document</button>
-                            </div>
-                        </div>
+                        <p class="section-desc">Submit required verification documents in PDF format</p>
+                        
                         <div class="document-list-wrapper mt-3">
-                            <h4>Submitted Verification Files:</h4>
-                            <ul class="doc-list" id="submitted-doc-list">
-                                <!-- Dynamic List -->
-                            </ul>
+                            <h4>Required Verification Files:</h4>
+                            
+                            <div class="upload-boxes-container">
+                                <div class="upload-item-box" id="card-aadhaar">
+                                    <div class="upload-item-details">
+                                        <div class="upload-item-title-row">
+                                            <span class="upload-item-emoji">🪪</span>
+                                            <span class="upload-item-title-text">Aadhaar Card</span>
+                                        </div>
+                                        <div class="upload-item-status-text" id="status-aadhaar">No file selected</div>
+                                    </div>
+                                    <div class="upload-item-right">
+                                        <button class="upload-btn-neat">
+                                            <span>Choose PDF</span>
+                                            <span class="upload-btn-arrow">📤</span>
+                                        </button>
+                                        <input type="file" id="file-aadhaar" accept=".pdf" style="display: none;">
+                                    </div>
+                                </div>
+                                
+                                <div class="upload-item-box" id="card-appointment">
+                                    <div class="upload-item-details">
+                                        <div class="upload-item-title-row">
+                                            <span class="upload-item-emoji">📄</span>
+                                            <span class="upload-item-title-text">Appointment Letter</span>
+                                        </div>
+                                        <div class="upload-item-status-text" id="status-appointment">No file selected</div>
+                                    </div>
+                                    <div class="upload-item-right">
+                                        <button class="upload-btn-neat">
+                                            <span>Choose PDF</span>
+                                            <span class="upload-btn-arrow">📤</span>
+                                        </button>
+                                        <input type="file" id="file-appointment" accept=".pdf" style="display: none;">
+                                    </div>
+                                </div>
+                                
+                                <div class="upload-item-box" id="card-tet">
+                                    <div class="upload-item-details">
+                                        <div class="upload-item-title-row">
+                                            <span class="upload-item-emoji">🎓</span>
+                                            <span class="upload-item-title-text">Teacher Eligibility Test</span>
+                                        </div>
+                                        <div class="upload-item-status-text" id="status-tet">No file selected</div>
+                                    </div>
+                                    <div class="upload-item-right">
+                                        <button class="upload-btn-neat">
+                                            <span>Choose PDF</span>
+                                            <span class="upload-btn-arrow">📤</span>
+                                        </button>
+                                        <input type="file" id="file-tet" accept=".pdf" style="display: none;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: center; margin-top: 2rem;">
+                                <button id="batch-submit-btn" class="btn btn-primary" style="width: 220px;" disabled>Submit</button>
+                            </div>
                         </div>
                     </div>
 
@@ -271,12 +320,27 @@
                                     <label for="edit-desig">Designation</label>
                                     <input type="text" id="edit-desig" required>
                                 </div>
+                                <div class="form-group mt-3">
+                                    <label style="font-weight: 600;">Required Verification</label>
+                                    <div id="hr-drawer-verification-docs" class="mt-2">
+                                        <!-- Documents list will sit here -->
+                                    </div>
+                                </div>
                                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                                     <button type="submit" class="btn btn-primary">Save Changes</button>
                                     <button type="button" id="delete-teacher-btn" class="btn btn-danger">Delete
                                         Profile</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    <!-- HR Verification View -->
+                    <div id="tab-hr-verification" class="tab-pane hidden">
+                        <h2>Compliance Verification</h2>
+                        <p class="section-desc">Review submitted Aadhaar, Appointment, and TET documents across all faculty members</p>
+                        <div id="hr-verification-list" class="mt-3">
+                            <!-- Dynamic Content -->
                         </div>
                     </div>
 
@@ -383,7 +447,6 @@
 
     </div>
 
-    <script src="/static/app.js?v=1.0.12"></script>
+    <script src="/static/app.js?v=1.0.52"></script>
 </body>
-
 </html>
