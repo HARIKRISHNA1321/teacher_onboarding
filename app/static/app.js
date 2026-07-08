@@ -41,7 +41,7 @@ async function authenticate(username, password) {
         const res = await fetch('/api/state');
         const state = await res.json();
         systemState = state;
-        
+
         let authenticated = false;
         let role = null;
         let userData = null;
@@ -108,6 +108,12 @@ async function authenticate(username, password) {
         sidebarEmail.innerText = userData.email;
         userDisplayName.innerText = userData.name;
 
+        // Update chatbot heading
+        const chatbotHeading = document.getElementById('chatbot-heading');
+        if (chatbotHeading) {
+            chatbotHeading.innerText = `Hello ${userData.name}, how can I help you today?`;
+        }
+
         // Render data values
         updateDashboardView();
 
@@ -168,6 +174,12 @@ function switchTab(tabId) {
 function updateDashboardView() {
     if (!systemState) return;
 
+    // Update chatbot heading for logged-in user
+    const chatbotHeading = document.getElementById('chatbot-heading');
+    if (chatbotHeading && userDisplayName && userDisplayName.innerText) {
+        chatbotHeading.innerText = `Hello ${userDisplayName.innerText}, how can I help you today?`;
+    }
+
     // 1. Render Announcements right panel
     const annListView = document.getElementById('announcements-list-view');
     annListView.innerHTML = '';
@@ -189,7 +201,7 @@ function updateDashboardView() {
     // 2. Load candidate specific panels if Candidate is active
     if (currentRole === 'candidate' && systemState.teachers[currentUser]) {
         const teacher = systemState.teachers[currentUser];
-        
+
         // Profile
         document.getElementById('prof-name').innerText = teacher.name;
         document.getElementById('prof-email').innerText = teacher.email;
@@ -222,7 +234,7 @@ function updateDashboardView() {
         // Attendance Record
         const absentCount = document.getElementById('attendance-absent-count');
         absentCount.innerText = teacher.attendance ? teacher.attendance.length : 0;
-        
+
         const attendanceBody = document.getElementById('attendance-record-body');
         attendanceBody.innerHTML = '';
         if (teacher.attendance && teacher.attendance.length > 0) {
@@ -258,7 +270,7 @@ function updateDashboardView() {
     if (currentRole === 'hr') {
         const teachersListContainer = document.getElementById('hr-teachers-list-view');
         teachersListContainer.innerHTML = '';
-        
+
         Object.keys(systemState.teachers).forEach(uname => {
             const t = systemState.teachers[uname];
             const div = document.createElement('div');
@@ -287,7 +299,7 @@ function updateDashboardView() {
         const allotTeacherSelect = document.getElementById('allot-teacher-select');
         const selectedVal = allotTeacherSelect.value;
         allotTeacherSelect.innerHTML = '';
-        
+
         Object.keys(systemState.teachers).forEach(uname => {
             const t = systemState.teachers[uname];
             const opt = document.createElement('option');
@@ -295,7 +307,7 @@ function updateDashboardView() {
             opt.innerText = `${t.name} (${t.username})`;
             allotTeacherSelect.appendChild(opt);
         });
-        
+
         if (selectedVal && Object.keys(systemState.teachers).includes(selectedVal)) {
             allotTeacherSelect.value = selectedVal;
         }
@@ -344,7 +356,7 @@ hrAddTeacherForm.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'add_teacher', payload })
         });
-        
+
         if (res.ok) {
             alert('Teacher profile successfully created!');
             hrAddTeacherForm.reset();
@@ -367,13 +379,13 @@ closeDrawerBtn.addEventListener('click', () => editDrawer.classList.add('hidden'
 function openEditDrawer(username) {
     const t = systemState.teachers[username];
     if (!t) return;
-    
+
     document.getElementById('edit-username').value = username;
     document.getElementById('edit-name').value = t.name;
     document.getElementById('edit-email').value = t.email;
     document.getElementById('edit-dept').value = t.department;
     document.getElementById('edit-desig').value = t.designation;
-    
+
     editDrawer.classList.remove('hidden');
 }
 
@@ -396,7 +408,7 @@ hrEditForm.addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'update_teacher', payload })
         });
-        
+
         if (res.ok) {
             alert('Teacher profile updated!');
             editDrawer.classList.add('hidden');
@@ -417,7 +429,7 @@ deleteTeacherBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     const username = document.getElementById('edit-username').value;
     if (!username) return;
-    
+
     if (confirm(`Are you sure you want to permanently delete the profile for @${username}?`)) {
         try {
             const res = await fetch('/api/action', {
@@ -428,7 +440,7 @@ deleteTeacherBtn.addEventListener('click', async (e) => {
                     payload: { username }
                 })
             });
-            
+
             if (res.ok) {
                 alert('Teacher profile successfully deleted.');
                 editDrawer.classList.add('hidden');
@@ -553,7 +565,7 @@ async function sendFullscreenChatMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text })
         });
-        
+
         // Remove thinking bubble
         const tb = document.getElementById('thinking-bubble');
         if (tb) tb.remove();
@@ -584,7 +596,7 @@ function formatMarkdown(text) {
     escaped = escaped.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
     // Convert newlines to line breaks
     escaped = escaped.replace(/\n/g, '<br>');
-    
+
     return escaped;
 }
 

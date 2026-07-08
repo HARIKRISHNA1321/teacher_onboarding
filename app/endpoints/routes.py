@@ -165,7 +165,7 @@ def chatbot_endpoint(req: ChatRequest) -> dict:
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
     
     prompt = (
-        f"You are a helpful PES Onboarding Assistant. Use the following Pinecone RAG context to answer the user's query.\n"
+        f"You are a helpful PESU AI. Use the following Pinecone RAG context to answer the user's query.\n"
         f"If you answer using the retrieved context guidelines, always append '[Source: Pinecone Database]' to make it clear that the response refers to retrieved records.\n"
         f"If the context does not contain enough info to answer the query, reply to the best of your knowledge, specify that it is general info, and do not append the citation.\n\n"
         f"Context:\n{rules_context}\n\n"

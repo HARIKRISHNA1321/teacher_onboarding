@@ -74,7 +74,7 @@
       "email": "1321harikrishna@gmail.com",
       "username": "teacher",
       "password": "password",
-      "seating_info": "Not Allotted",
+      "seating_info": "room 320, desk C",
       "leave_balance": 30,
       "credentials_sent": true,
       "active_stage": "Credentials-Sent"
@@ -125,7 +125,7 @@
       "designation": "Assistant Professor",
       "username": "gauravb2188@gmail.com",
       "password": "7eidgLpBIuryvw",
-      "seating_info": "Not Allotted",
+      "seating_info": "room 320, desk C",
       "attendance": [
         {
           "date": "2026-06-10",

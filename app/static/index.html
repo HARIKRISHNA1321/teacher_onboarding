@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PES University Academic Portal</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
     <!-- Background glows -->
     <div class="glow-bg glow-primary"></div>
@@ -26,7 +30,8 @@
                 <form id="login-form">
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input type="text" id="username" placeholder="Enter username (e.g. teacher, hr, admin)" required>
+                        <input type="text" id="username" placeholder="Enter username (e.g. teacher, hr, admin)"
+                            required>
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
@@ -45,7 +50,7 @@
 
         <!-- ==================== 2. MAIN PORTAL WINDOW (3-COLUMN LAYOUT) ==================== -->
         <div id="portal-screen" class="portal-wrapper hidden">
-            
+
             <!-- TOP BAR -->
             <header class="portal-header glass-card">
                 <div class="header-logo">
@@ -63,7 +68,7 @@
 
             <!-- 3-COLUMN LAYOUT PANEL -->
             <div class="portal-body">
-                
+
                 <!-- COLUMN 1: LEFT SIDEBAR (DASHBOARD NAVIGATION & CHAT) -->
                 <aside class="sidebar-col glass-card">
                     <!-- Sidebar Profile Card -->
@@ -79,7 +84,7 @@
                         <div id="candidate-menu" class="menu-group">
                             <button class="nav-tab active" data-tab="candidate-profile">My Profile</button>
                             <button class="nav-tab" data-tab="candidate-calendar">My Calendar</button>
-                            <button class="nav-tab" data-tab="candidate-chatbot">RAG Chatbot</button>
+                            <button class="nav-tab" data-tab="candidate-chatbot">PESU AI</button>
                             <button class="nav-tab" data-tab="candidate-attendance">My Attendance</button>
                             <button class="nav-tab" data-tab="candidate-seating">Seating Info</button>
                             <button class="nav-tab" data-tab="candidate-documents">Submit Documents</button>
@@ -103,18 +108,23 @@
 
                 <!-- COLUMN 2: MIDDLE MAIN CONTENT (DYNAMIC VIEWS) -->
                 <main class="main-content-col glass-card">
-                    
+
                     <!-- ==================== CANDIDATE VIEWS ==================== -->
                     <!-- My Profile View -->
                     <div id="tab-candidate-profile" class="tab-pane">
                         <h2>My Profile</h2>
                         <p class="section-desc">Personal academic record details</p>
                         <div class="profile-details-grid mt-3">
-                            <div class="profile-detail-item"><strong>Full Name:</strong> <span id="prof-name">-</span></div>
-                            <div class="profile-detail-item"><strong>Email Address:</strong> <span id="prof-email">-</span></div>
-                            <div class="profile-detail-item"><strong>Department:</strong> <span id="prof-dept">-</span></div>
-                            <div class="profile-detail-item"><strong>Designation:</strong> <span id="prof-desig">-</span></div>
-                            <div class="profile-detail-item"><strong>Leave Balance:</strong> <span id="prof-leaves">-</span> days</div>
+                            <div class="profile-detail-item"><strong>Full Name:</strong> <span id="prof-name">-</span>
+                            </div>
+                            <div class="profile-detail-item"><strong>Email Address:</strong> <span
+                                    id="prof-email">-</span></div>
+                            <div class="profile-detail-item"><strong>Department:</strong> <span id="prof-dept">-</span>
+                            </div>
+                            <div class="profile-detail-item"><strong>Designation:</strong> <span
+                                    id="prof-desig">-</span></div>
+                            <div class="profile-detail-item"><strong>Leave Balance:</strong> <span
+                                    id="prof-leaves">-</span> days</div>
                         </div>
                     </div>
 
@@ -143,15 +153,16 @@
                     <div id="tab-candidate-chatbot" class="tab-pane hidden">
                         <div class="chatbot-container-full">
                             <div class="chatbot-header">
-                                <h3>PES Onboarding & Rules Assistant (Pinecone RAG)</h3>
+                                <h3 id="chatbot-heading">Hello User, how can I help you today?</h3>
                             </div>
                             <div class="chatbot-chat-body" id="fullscreen-chat-body">
                                 <div class="chat-message bot">
-                                    Hello! Ask me any questions about leaves, balances, or university policy documents. I scan and query verified guidelines using Pinecone.
+                                    Ask me anything about PES
                                 </div>
                             </div>
                             <div class="chatbot-footer">
-                                <input type="text" id="fullscreen-chat-input" placeholder="Ask rules (e.g. What is the joining rule?)...">
+                                <input type="text" id="fullscreen-chat-input"
+                                    placeholder="Ask rules (e.g. What is the joining rule?)...">
                                 <button id="fullscreen-chat-send" class="btn btn-primary">Send</button>
                             </div>
                         </div>
@@ -205,7 +216,8 @@
                         <p class="section-desc">Submit joining structural files (.pdf, .docx)</p>
                         <div class="document-upload-form mt-3">
                             <div class="form-group row-group">
-                                <input type="text" id="document-input" placeholder="e.g. Appointment_Letter.pdf" class="input-inline">
+                                <input type="text" id="document-input" placeholder="e.g. Appointment_Letter.pdf"
+                                    class="input-inline">
                                 <button id="submit-doc-btn" class="btn btn-primary">Upload Document</button>
                             </div>
                         </div>
@@ -261,7 +273,8 @@
                                 </div>
                                 <div style="display: flex; gap: 10px; margin-top: 15px;">
                                     <button type="submit" class="btn btn-primary">Save Changes</button>
-                                    <button type="button" id="delete-teacher-btn" class="btn btn-danger">Delete Profile</button>
+                                    <button type="button" id="delete-teacher-btn" class="btn btn-danger">Delete
+                                        Profile</button>
                                 </div>
                             </form>
                         </div>
@@ -306,7 +319,8 @@
                             </div>
                             <div class="form-group">
                                 <label for="allot-seating-input">Seat Coordinates</label>
-                                <input type="text" id="allot-seating-input" placeholder="e.g. Room 402, Desk A" required>
+                                <input type="text" id="allot-seating-input" placeholder="e.g. Room 402, Desk A"
+                                    required>
                             </div>
                             <button type="submit" class="btn btn-primary">Allocate Space</button>
                         </form>
@@ -319,11 +333,13 @@
                         <form id="admin-announcement-form" class="mt-3">
                             <div class="form-group">
                                 <label for="ann-title">Title</label>
-                                <input type="text" id="ann-title" placeholder="e.g. Mid-Term Exam Seating Chart" required>
+                                <input type="text" id="ann-title" placeholder="e.g. Mid-Term Exam Seating Chart"
+                                    required>
                             </div>
                             <div class="form-group">
                                 <label for="ann-content">Content Details</label>
-                                <textarea id="ann-content" placeholder="Type announcement instructions..." rows="5" required></textarea>
+                                <textarea id="ann-content" placeholder="Type announcement instructions..." rows="5"
+                                    required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">Broadcast News</button>
                         </form>
@@ -367,6 +383,7 @@
 
     </div>
 
-    <script src="/static/app.js?v=1.0.6"></script>
+    <script src="/static/app.js?v=1.0.12"></script>
 </body>
+
 </html>
