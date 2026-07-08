@@ -200,31 +200,46 @@ def refine_query_with_gemini(user_input: str) -> str:
 
 @router.post("/api/chat")
 def chatbot_endpoint(req: ChatRequest) -> dict:
-    # Read the current query
     clean_input = DataMaskingMiddleware.redact_pii(req.message)
     write_log("CHATBOT_AGENT", f"Received message: '{clean_input}'")
     
-    # 1. Refine query before calling Pinecone RAG search
-    refined_query = refine_query_with_gemini(clean_input)
-    
-    # 2. Query Pinecone database to get context
-    from app.tools.pinecone_rag import PineconeRAGService
-    pinecone_service = PineconeRAGService()
-    rules_context = pinecone_service.query_rules(refined_query)
-    
-    # 2. Call Gemini model using API Key
-    from dotenv import load_dotenv
-    load_dotenv(override=True)
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    
-    prompt = (
-        f"You are a helpful PESU AI. Use the following Pinecone RAG context to answer the user's query.\n"
-        f"If you answer using the retrieved context guidelines, always append '[Source: Pinecone Database]' to make it clear that the response refers to retrieved records.\n"
-        f"If the context does not contain enough info to answer the query, reply to the best of your knowledge, specify that it is general info, and do not append the citation.\n\n"
-        f"Context:\n{rules_context}\n\n"
-        f"User Query: {clean_input}\n\n"
-        f"Response:"
-    )
+    if req.message == "load_basic_policies_rag":
+        # Force a dedicated lookup on core university policies
+        from app.tools.pinecone_rag import PineconeRAGService
+        pinecone_service = PineconeRAGService()
+        rules_context = pinecone_service.query_rules("core university guidelines, employee ethics, campus policies, faculty code of conduct")
+        
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
+        api_key = os.getenv("GEMINI_API_KEY", "").strip()
+        
+        prompt = (
+            f"You are a helpful PESU AI. Please synthesize the following retrieved university policies, faculty code of conduct, and employee guidelines into a welcoming, easy-to-digest executive brief for a newly onboarded teacher. Start with a warm welcome statement, highlight the core values, working expectations, and code of conduct. Keep it structured with bullet points.\n\n"
+            f"Retrieved Policies:\n{rules_context}\n\n"
+            f"Executive Brief:"
+        )
+    else:
+        # 1. Refine query before calling Pinecone RAG search
+        refined_query = refine_query_with_gemini(clean_input)
+        
+        # 2. Query Pinecone database to get context
+        from app.tools.pinecone_rag import PineconeRAGService
+        pinecone_service = PineconeRAGService()
+        rules_context = pinecone_service.query_rules(refined_query)
+        
+        # 2. Call Gemini model using API Key
+        from dotenv import load_dotenv
+        load_dotenv(override=True)
+        api_key = os.getenv("GEMINI_API_KEY", "").strip()
+        
+        prompt = (
+            f"You are a helpful PESU AI. Use the following Pinecone RAG context to answer the user's query.\n"
+            f"If you answer using the retrieved context guidelines, always append '[Source: Pinecone Database]' to make it clear that the response refers to retrieved records.\n"
+            f"If the context does not contain enough info to answer the query, reply to the best of your knowledge, specify that it is general info, and do not append the citation.\n\n"
+            f"Context:\n{rules_context}\n\n"
+            f"User Query: {clean_input}\n\n"
+            f"Response:"
+        )
     
     answer = None
     if api_key:
@@ -511,7 +526,7 @@ def trigger_action(req: ActionRequest, background_tasks: BackgroundTasks) -> dic
         state["teachers"][username].update(ws.model_dump())
         write_log("HR_PORTAL", f"Evaluated document '{doc_name}' for teacher {username}: approved={approved}")
 
-        if ws.current_stage == "policy_rag_agent":
+        if ws.current_stage == "policy_review":
             email = state["teachers"][username].get("email")
             name = state["teachers"][username].get("name", "Faculty Member")
             if email:

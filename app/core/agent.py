@@ -86,8 +86,8 @@ class WorkflowState(BaseModel):
         """Advances current_stage if all three required documents are approved."""
         all_approved = all(status == "approved" for status in self.document_statuses.values())
         if all_approved:
-            self.current_stage = "policy_rag_agent"
-            print("[STATE TRANSITION] All documents approved! Advancing current_stage to 'policy_rag_agent'.")
+            self.current_stage = "policy_review"
+            print("[STATE TRANSITION] All documents approved! Advancing current_stage to 'policy_review'.")
 
 # --- 2. Workflow Routing and Node Implementations ---
 

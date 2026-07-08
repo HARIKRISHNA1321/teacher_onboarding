@@ -930,3 +930,15 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Blinking Alert for Sidebar */
+@keyframes sidebarBlink {
+    0% { background-color: rgba(88, 166, 255, 0.15); box-shadow: 0 0 5px rgba(88, 166, 255, 0.5); }
+    50% { background-color: rgba(88, 166, 255, 0.4); box-shadow: 0 0 15px rgba(88, 166, 255, 0.8); }
+    100% { background-color: rgba(88, 166, 255, 0.15); box-shadow: 0 0 5px rgba(88, 166, 255, 0.5); }
+}
+.blinking-alert {
+    animation: sidebarBlink 1.5s infinite !important;
+    border: 1px solid #58a6ff !important;
+    color: white !important;
+}

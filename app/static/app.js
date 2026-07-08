@@ -166,8 +166,22 @@ async function syncStateData() {
 // Tab switcher handler
 document.querySelectorAll('.nav-tab').forEach(tab => {
     tab.addEventListener('click', (e) => {
-        const targetTab = e.target.getAttribute('data-tab');
+        const btn = e.target.closest('.nav-tab');
+        if (!btn) return;
+        const targetTab = btn.getAttribute('data-tab');
         switchTab(targetTab);
+        
+        if (targetTab === 'candidate-chatbot') {
+            const teacher = (systemState.teachers && systemState.teachers[currentUser]) ? systemState.teachers[currentUser] : null;
+            if (teacher && teacher.current_stage === 'policy_review') {
+                const hasClickedAlert = localStorage.getItem('has_clicked_policy_alert') === 'true';
+                if (!hasClickedAlert) {
+                    localStorage.setItem('has_clicked_policy_alert', 'true');
+                    btn.classList.remove('blinking-alert');
+                    sendHiddenPolicyQuery();
+                }
+            }
+        }
     });
 });
 
@@ -187,6 +201,27 @@ function switchTab(tabId) {
 // Update DOM elements using loaded state
 function updateDashboardView() {
     if (!systemState) return;
+
+    // Sidebar Blinking Alert for Candidate's Chatbot Tab
+    const teacher = (systemState.teachers && systemState.teachers[currentUser]) ? systemState.teachers[currentUser] : null;
+    const chatbotTab = document.querySelector('.nav-tab[data-tab="candidate-chatbot"]');
+    if (teacher && currentRole === 'candidate') {
+        const currentStage = teacher.current_stage || 'document_collection';
+        const hasClickedAlert = localStorage.getItem('has_clicked_policy_alert') === 'true';
+        if (currentStage === 'policy_review' && !hasClickedAlert) {
+            if (chatbotTab) {
+                chatbotTab.classList.add('blinking-alert');
+            }
+        } else {
+            if (chatbotTab) {
+                chatbotTab.classList.remove('blinking-alert');
+            }
+        }
+    } else {
+        if (chatbotTab) {
+            chatbotTab.classList.remove('blinking-alert');
+        }
+    }
 
     // Update chatbot heading for logged-in user
     const chatbotHeading = document.getElementById('chatbot-heading');
@@ -868,8 +903,8 @@ if (batchSubmitBtn) {
                 if (fileAppointment) fileAppointment.value = '';
                 if (fileTet) fileTet.value = '';
                 
+                await syncStateData();
                 alert('Documents submitted successfully!');
-                syncStateData();
             } else {
                 alert('One or more document uploads failed.');
                 updateSubmitButtonState();
@@ -1005,4 +1040,28 @@ function appendFullscreenChatBubble(sender, text) {
     bubble.innerHTML = formatMarkdown(text);
     fullscreenChatBody.appendChild(bubble);
     return bubble;
+}
+
+async function sendHiddenPolicyQuery() {
+    const thinkingBubble = appendFullscreenChatBubble('bot', 'Thinking...');
+    thinkingBubble.id = 'thinking-bubble';
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: 'load_basic_policies_rag' })
+        });
+
+        const tb = document.getElementById('thinking-bubble');
+        if (tb) tb.remove();
+
+        const data = await res.json();
+        appendFullscreenChatBubble('bot', data.response);
+    } catch (e) {
+        const tb = document.getElementById('thinking-bubble');
+        if (tb) tb.remove();
+        appendFullscreenChatBubble('bot', 'Error communicating with Pinecone RAG search agent.');
+    }
+    fullscreenChatBody.scrollTop = fullscreenChatBody.scrollHeight;
 }
