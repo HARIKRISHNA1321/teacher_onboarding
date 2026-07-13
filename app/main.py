@@ -1732,6 +1732,20 @@ if st.runtime.exists():
             elif choice == "Verification Hub":
                 st.markdown("### Verification Hub")
                 st.markdown("Review and evaluate uploaded verification files.")
+                
+                if "preview_file" in st.session_state and st.session_state.preview_file:
+                    st.markdown(f"""
+                    <div class="glass-card" style="border-left: 5px solid #38bdf8; padding: 20px; margin-bottom: 20px;">
+                        <h4 style="margin-top:0; color:#38bdf8;">📄 Document Preview: {st.session_state.preview_file}</h4>
+                        <p style="font-size:0.95rem; color:#cbd5e1; margin-bottom:15px;">
+                            This is a simulated verification view for administrative preview of the submitted PDF asset.
+                        </p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    if st.button("Close Preview"):
+                        st.session_state.preview_file = None
+                        st.rerun()
+
                 teachers_dict = state.get("teachers", {})
                 pending_verifications = False
                 
@@ -1747,8 +1761,12 @@ if st.runtime.exists():
                             if status == "pending":
                                 filename = doc_paths.get(doc_type, "N/A")
                                 st.write(f"- **{doc_type.replace('_', ' ').title()}:** File `{filename}` is pending approval.")
-                                col1, col2 = st.columns(2)
+                                col1, col2, col3 = st.columns(3)
                                 with col1:
+                                    if st.button("Preview", key=f"prev_{key}_{doc_type}"):
+                                        st.session_state.preview_file = filename
+                                        st.rerun()
+                                with col2:
                                     if st.button("Approve", key=f"app_{key}_{doc_type}"):
                                         matching_fields = {k: v for k, v in teacher.items() if k in WorkflowState.model_fields}
                                         ws = WorkflowState(**matching_fields)
@@ -1769,7 +1787,7 @@ if st.runtime.exists():
                                             
                                         st.success(f"Approved {doc_type}!")
                                         st.rerun()
-                                with col2:
+                                with col3:
                                     if st.button("Reject", key=f"rej_{key}_{doc_type}"):
                                         matching_fields = {k: v for k, v in teacher.items() if k in WorkflowState.model_fields}
                                         ws = WorkflowState(**matching_fields)
@@ -1789,6 +1807,7 @@ if st.runtime.exists():
                 
                 if not pending_verifications:
                     st.info("No documents pending verification at this moment.")
+
                     
             elif choice == "Add New Teacher":
                 st.markdown("### Add New Teacher")
