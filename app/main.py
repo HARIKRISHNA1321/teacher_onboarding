@@ -78,7 +78,7 @@ artifact_service_uri = f"gs://{logs_bucket_name}" if logs_bucket_name else None
 
 app: FastAPI = get_fast_api_app(
     agents_dir=AGENT_DIR,
-    web=True,
+    web=False,
     artifact_service_uri=artifact_service_uri,
     allow_origins=allow_origins,
     session_service_uri=session_service_uri,
