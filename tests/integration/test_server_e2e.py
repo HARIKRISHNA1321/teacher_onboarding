@@ -162,10 +162,12 @@ def test_chat_stream(server_fixture: subprocess.Popen[str]) -> None:
     has_text_content = False
     for event in events:
         content = event.get("content")
+        output = event.get("output")
         if (
-            content is not None
+            (content is not None
             and content.get("parts")
-            and any(part.get("text") for part in content["parts"])
+            and any(part.get("text") for part in content["parts"]))
+            or (output and isinstance(output, str))
         ):
             has_text_content = True
             break

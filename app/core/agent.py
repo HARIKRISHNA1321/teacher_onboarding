@@ -19,8 +19,13 @@ from app.tools.pinecone_rag import PineconeRAGService
 try:
     _, project_id = google.auth.default()
 except Exception:
-    project_id = "mock-project-id"
+    project_id = None
+
+if not project_id:
+    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT") or "mock-project-id"
+
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
+
 os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
 
