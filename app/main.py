@@ -1644,6 +1644,12 @@ if st.runtime.exists():
                     if uploaded_file is not None:
                         if st.button("Submit Document"):
                             doc_name = uploaded_file.name
+                            
+                            # Save actual file to disk for HR viewing
+                            os.makedirs("uploaded_docs", exist_ok=True)
+                            with open(os.path.join("uploaded_docs", doc_name), "wb") as f:
+                                f.write(uploaded_file.getbuffer())
+                                
                             matching_fields = {k: v for k, v in teacher_info.items() if k in WorkflowState.model_fields}
                             ws = WorkflowState(**matching_fields)
                             
@@ -1734,17 +1740,45 @@ if st.runtime.exists():
                 st.markdown("Review and evaluate uploaded verification files.")
                 
                 if "preview_file" in st.session_state and st.session_state.preview_file:
-                    st.markdown(f"""
-                    <div class="glass-card" style="border-left: 5px solid #38bdf8; padding: 20px; margin-bottom: 20px;">
-                        <h4 style="margin-top:0; color:#38bdf8;">📄 Document Preview: {st.session_state.preview_file}</h4>
-                        <p style="font-size:0.95rem; color:#cbd5e1; margin-bottom:15px;">
-                            This is a simulated verification view for administrative preview of the submitted PDF asset.
-                        </p>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    filename = st.session_state.preview_file
+                    filepath = os.path.join("uploaded_docs", filename)
+                    
+                    if os.path.exists(filepath):
+                        import base64
+                        try:
+                            with open(filepath, "rb") as f:
+                                file_bytes = f.read()
+                                base64_pdf = base64.b64encode(file_bytes).decode('utf-8')
+                            
+                            st.markdown(f"#### 📄 Previewing: `{filename}`")
+                            
+                            # Render actual PDF inside an iframe
+                            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" style="border:1px solid rgba(255,255,255,0.1); border-radius:8px;"></iframe>'
+                            st.markdown(pdf_display, unsafe_allow_html=True)
+                            
+                            # Provide a download button
+                            st.download_button(
+                                label="Download Actual PDF",
+                                data=file_bytes,
+                                file_name=filename,
+                                mime="application/pdf"
+                            )
+                        except Exception as e:
+                            st.error(f"Error loading PDF preview: {str(e)}")
+                    else:
+                        st.markdown(f"""
+                        <div class="glass-card" style="border-left: 5px solid #38bdf8; padding: 20px; margin-bottom: 20px;">
+                            <h4 style="margin-top:0; color:#38bdf8;">📄 Document Preview: {filename}</h4>
+                            <p style="font-size:0.95rem; color:#cbd5e1; margin-bottom:15px;">
+                                This is a simulated verification view for administrative preview of the submitted PDF asset.
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
                     if st.button("Close Preview"):
                         st.session_state.preview_file = None
                         st.rerun()
+
 
                 teachers_dict = state.get("teachers", {})
                 pending_verifications = False
