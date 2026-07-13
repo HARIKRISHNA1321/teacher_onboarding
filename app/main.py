@@ -1445,14 +1445,7 @@ if st.runtime.exists():
                     else:
                         st.error("Invalid credentials. Please try again.")
 
-            st.markdown("""
-            <div class="glass-card">
-                <h4 style="margin-top:0; color:#38bdf8;">Primary Logins for Testing:</h4>
-                <p style="margin-bottom:5px;"><strong>Candidate / Teacher:</strong> <code>teacher</code> / <code>password</code></p>
-                <p style="margin-bottom:5px;"><strong>HR Dept:</strong> <code>hr</code> / <code>password</code></p>
-                <p style="margin-bottom:0;"><strong>Admin:</strong> <code>admin</code> / <code>password</code></p>
-            </div>
-            """, unsafe_allow_html=True)
+
     else:
         with st.sidebar:
             st.markdown(f"""
