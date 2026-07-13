@@ -290,13 +290,16 @@ def review_before_execute(api_action: str):
 # =====================================================================
 # 7. ADK WORKFLOW SCHEMAS & TOPOLOGY (formerly app/core/agent.py)
 # =====================================================================
-try:
-    _, project_id_auth = google.auth.default()
-except Exception:
-    project_id_auth = None
+project_id_auth = "mock-project-id"
+if not st.runtime.exists():
+    try:
+        _, project_id_auth = google.auth.default()
+    except Exception:
+        project_id_auth = None
 
 if not project_id_auth:
     project_id_auth = os.environ.get("GOOGLE_CLOUD_PROJECT") or "mock-project-id"
+
 
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id_auth
 os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
@@ -1192,13 +1195,20 @@ def write_log(agent: str, message: str):
 # =====================================================================
 setup_telemetry()
 otel_to_cloud = True
-try:
-    _, project_id = google.auth.default()
-except Exception:
-    project_id = "mock-project-id"
+project_id = "mock-project-id"
+
+# Bypass GCP metadata checking when running Streamlit to avoid blocking/timeouts
+if st.runtime.exists():
     otel_to_cloud = False
+else:
+    try:
+        _, project_id = google.auth.default()
+    except Exception:
+        otel_to_cloud = False
 
 try:
+    if not otel_to_cloud:
+        raise ValueError("Skipping cloud logging for local/Streamlit run")
     logging_client = google_cloud_logging.Client()
     logger = logging_client.logger(__name__)
 except Exception:
@@ -1214,6 +1224,7 @@ except Exception:
         def warning(self, msg):
             logging.warning(msg)
     logger = LocalLogger()
+
 
 allow_origins = (
     os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
