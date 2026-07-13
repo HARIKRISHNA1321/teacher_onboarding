@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .core.agent import app
+from .main import adk_app as app
 
 __all__ = ["app"]
+
+
