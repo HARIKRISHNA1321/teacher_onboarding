@@ -49,7 +49,7 @@ def start_server() -> subprocess.Popen[str]:
         sys.executable,
         "-m",
         "uvicorn",
-        "app.app:app",
+        "app.main:app",
         "--host",
         "0.0.0.0",
         "--port",
