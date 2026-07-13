@@ -9,8 +9,6 @@
   "api_action": "Email HR & Candidate Interview Confirmation",
   "target_node": "initial_interview",
   "state_at_trigger": {
-    "preferred_language": "English",
-    "visit_count": "1",
     "candidate_name": "Dr. Jane Doe",
     "active_stage": "Credentials-Sent",
     "confirmation_email_sent": "False",
