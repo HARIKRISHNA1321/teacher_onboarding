@@ -288,5 +288,13 @@
   },
   "confirmation_email_sent": true,
   "active_stage": "Credentials-Sent",
-  "credentials_sent": true
+  "credentials_sent": true,
+  "leave_balance": 29,
+  "leaves": [
+    {
+      "days": 1,
+      "status": "approved",
+      "request": "parts=[Part(\n  text='What is the leave balance?'\n)] role='user'"
+    }
+  ]
 }
