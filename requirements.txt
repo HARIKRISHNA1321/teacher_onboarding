@@ -6,3 +6,5 @@ python-dotenv>=1.0.0
 uvicorn>=0.15.0
 fastapi>=0.70.0
 streamlit>=1.30.0
+pinecone>=9.1.0
+
