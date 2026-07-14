@@ -1379,6 +1379,84 @@ if st.runtime.exists():
         .css-1d391tw {
             background-color: #0f172a !important;
         }
+        
+        /* Style Streamlit radio buttons as tabs */
+        div[data-testid="stRadio"] > div {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+        
+        div[data-testid="stRadio"] label {
+            background-color: rgba(255, 255, 255, 0.02) !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+            padding: 10px 14px !important;
+            border-radius: 8px !important;
+            color: #94a3b8 !important;
+            cursor: pointer !important;
+            transition: all 0.25s ease !important;
+            width: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        div[data-testid="stRadio"] label:hover {
+            background-color: rgba(255, 255, 255, 0.06) !important;
+            color: #fff !important;
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+        
+        div[data-testid="stRadio"] label[data-checked="true"] {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(6, 182, 212, 0.15)) !important;
+            color: #fff !important;
+            border: 1px solid rgba(37, 99, 235, 0.5) !important;
+            box-shadow: 0 0 15px rgba(37, 99, 235, 0.25) !important;
+        }
+        
+        div[data-testid="stRadio"] span[data-testid="stRadioCircle"],
+        div[data-testid="stRadio"] div[data-testid="stRadioCircle"] {
+            display: none !important;
+        }
+        
+        div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 0.9rem !important;
+            font-weight: 500 !important;
+        }
+        
+        /* PESU AI Logo glowing effect */
+        .pesu-logo-container {
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .pesu-ai-logo-glowing {
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 0.6rem;
+            border-radius: 8px;
+            background: rgba(37, 99, 235, 0.05);
+            border: 1px solid rgba(37, 99, 235, 0.15);
+            color: #f8fafc;
+            letter-spacing: 1.5px;
+            animation: logo-glow 3s infinite ease-in-out;
+        }
+
+        @keyframes logo-glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(37, 99, 235, 0.15), inset 0 0 5px rgba(37, 99, 235, 0.1);
+                text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+                border-color: rgba(37, 99, 235, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(37, 99, 235, 0.6), inset 0 0 10px rgba(6, 182, 212, 0.3);
+                text-shadow: 0 0 12px #06b6d4, 0 0 20px #2563eb;
+                border-color: #06b6d4;
+                color: #fff;
+            }
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -1461,6 +1539,13 @@ if st.runtime.exists():
                 <div style="font-size: 2.5rem; margin-bottom: 5px;">👤</div>
                 <h4 style="margin: 0; font-size: 1.1rem;">{st.session_state.username}</h4>
                 <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 2px; margin-bottom: 0;">{st.session_state.role if st.session_state.role != "Teacher" else state["teachers"][st.session_state.teacher_key].get("email")}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Glowing PESU AI logo container
+            st.markdown("""
+            <div class="pesu-logo-container" style="margin-bottom: 15px;">
+                <div class="pesu-ai-logo-glowing">⚡ PESU AI</div>
             </div>
             """, unsafe_allow_html=True)
             
