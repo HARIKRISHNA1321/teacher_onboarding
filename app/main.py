@@ -1752,13 +1752,9 @@ if st.runtime.exists():
                             
                             st.markdown(f"#### 📄 Previewing: `{filename}`")
                             
-                            # Render actual PDF inside an iframe
-                            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" style="border:1px solid rgba(255,255,255,0.1); border-radius:8px;"></iframe>'
-                            st.markdown(pdf_display, unsafe_allow_html=True)
-                            
-                            # Provide a download button
+                            # Provide a download button renamed to Preview (the iframe preview has been removed)
                             st.download_button(
-                                label="Download Actual PDF",
+                                label="Preview",
                                 data=file_bytes,
                                 file_name=filename,
                                 mime="application/pdf"

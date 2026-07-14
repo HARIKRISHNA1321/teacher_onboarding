@@ -361,8 +361,8 @@ body {
     width: 100%;
     text-align: left;
     padding: 0.8rem 1rem;
-    background: none;
-    border: none;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
     font-weight: 500;
     border-radius: 8px;
@@ -372,14 +372,51 @@ body {
 }
 
 .nav-tab:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.06);
     color: #fff;
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 .nav-tab.active {
-    background: rgba(37, 99, 235, 0.15);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.25), rgba(6, 182, 212, 0.15));
     color: #fff;
-    border-left: 3px solid var(--blue);
+    border: 1px solid rgba(37, 99, 235, 0.5);
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.25);
+}
+
+/* PESU AI Logo glowing effect */
+.pesu-logo-container {
+    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+.pesu-ai-logo-glowing {
+    font-family: var(--font-mono);
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0.6rem;
+    border-radius: 8px;
+    background: rgba(37, 99, 235, 0.05);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    color: var(--text-primary);
+    letter-spacing: 1.5px;
+    animation: logo-glow 3s infinite ease-in-out;
+}
+
+@keyframes logo-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(37, 99, 235, 0.15), inset 0 0 5px rgba(37, 99, 235, 0.1);
+        text-shadow: 0 0 4px rgba(255, 255, 255, 0.4);
+        border-color: rgba(37, 99, 235, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(37, 99, 235, 0.6), inset 0 0 10px rgba(6, 182, 212, 0.3);
+        text-shadow: 0 0 12px var(--cyan), 0 0 20px var(--blue);
+        border-color: var(--cyan);
+        color: #fff;
+    }
 }
 
 /* Middle Main Content Column */

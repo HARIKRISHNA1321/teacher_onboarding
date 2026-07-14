@@ -445,7 +445,7 @@ function updateDashboardView() {
                                 <div class="verification-doc-file">${aadhaar}</div>
                                 ${t.documents[0] ? `
                                     <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%;">
-                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${aadhaar}')">View</button>
+                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${aadhaar}')">Preview</button>
                                         ${isAadhaarVerified ? `
                                             <button class="btn btn-success btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" disabled>Approved ✓</button>
                                         ` : `
@@ -463,7 +463,7 @@ function updateDashboardView() {
                                 <div class="verification-doc-file">${appointment}</div>
                                 ${t.documents[1] ? `
                                     <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%;">
-                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${appointment}')">View</button>
+                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${appointment}')">Preview</button>
                                         ${isAppointmentVerified ? `
                                             <button class="btn btn-success btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" disabled>Approved ✓</button>
                                         ` : `
@@ -481,7 +481,7 @@ function updateDashboardView() {
                                 <div class="verification-doc-file">${tet}</div>
                                 ${t.documents[2] ? `
                                     <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; width: 100%;">
-                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${tet}')">View</button>
+                                        <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" onclick="viewDoc('${tet}')">Preview</button>
                                         ${isTetVerified ? `
                                             <button class="btn btn-success btn-sm" style="font-size: 0.75rem; padding: 4px 6px;" disabled>Approved ✓</button>
                                         ` : `
