@@ -1395,9 +1395,6 @@ if st.runtime.exists():
             color: #94a3b8 !important;
             cursor: pointer !important;
             transition: all 0.25s ease !important;
-            width: 100% !important;
-            display: flex !important;
-            align-items: center !important;
         }
         
         div[data-testid="stRadio"] label:hover {
@@ -1413,15 +1410,14 @@ if st.runtime.exists():
             box-shadow: 0 0 15px rgba(37, 99, 235, 0.25) !important;
         }
         
+        div[data-testid="stRadio"] [data-testid="stRadioCircle"],
         div[data-testid="stRadio"] span[data-testid="stRadioCircle"],
         div[data-testid="stRadio"] div[data-testid="stRadioCircle"],
-        div[data-testid="stRadio"] [data-testid="stRadioCircle"],
-        div[data-testid="stRadio"] label > div > div:first-child,
-        div[data-testid="stRadio"] label > div:first-child:not(:last-child) {
+        div[data-testid="stRadio"] label svg {
             display: none !important;
         }
         
-        div[data-testid="stRadio"] > label {
+        div[data-testid="stRadio"] [data-testid="stWidgetLabel"] {
             display: none !important;
         }
         
@@ -1550,9 +1546,16 @@ if st.runtime.exists():
             """, unsafe_allow_html=True)
             
             if st.session_state.role == "Teacher":
-                # Glowing PESU AI logo container for Teacher
+                # Glowing PESU AI logo container for Teacher (with click handler to switch tabs to Chatbot)
                 st.markdown("""
-                <div class="pesu-logo-container" style="margin-bottom: 15px;">
+                <div class="pesu-logo-container" style="margin-bottom: 15px; cursor: pointer;" onclick="
+                    const doc = window.parent.document || document;
+                    const labels = Array.from(doc.querySelectorAll('div[data-testid=\'stRadio\'] label'));
+                    const chatbotLabel = labels.find(el => el.innerText.includes('PESU AI Chatbot') || el.textContent.includes('PESU AI Chatbot'));
+                    if (chatbotLabel) {
+                        chatbotLabel.click();
+                    }
+                ">
                     <div class="pesu-ai-logo-glowing">⚡ PESU AI</div>
                 </div>
                 """, unsafe_allow_html=True)
