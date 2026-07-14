@@ -1414,7 +1414,12 @@ if st.runtime.exists():
         }
         
         div[data-testid="stRadio"] span[data-testid="stRadioCircle"],
-        div[data-testid="stRadio"] div[data-testid="stRadioCircle"] {
+        div[data-testid="stRadio"] div[data-testid="stRadioCircle"],
+        div[data-testid="stRadio"] label div:first-child {
+            display: none !important;
+        }
+        
+        div[data-testid="stRadio"] > label {
             display: none !important;
         }
         
@@ -1542,14 +1547,14 @@ if st.runtime.exists():
             </div>
             """, unsafe_allow_html=True)
             
-            # Glowing PESU AI logo container
-            st.markdown("""
-            <div class="pesu-logo-container" style="margin-bottom: 15px;">
-                <div class="pesu-ai-logo-glowing">⚡ PESU AI</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
             if st.session_state.role == "Teacher":
+                # Glowing PESU AI logo container for Teacher
+                st.markdown("""
+                <div class="pesu-logo-container" style="margin-bottom: 15px;">
+                    <div class="pesu-ai-logo-glowing">⚡ PESU AI</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
                 menu_options = [
                     "My Profile",
                     "Academic Calendar",
