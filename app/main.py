@@ -1415,7 +1415,9 @@ if st.runtime.exists():
         
         div[data-testid="stRadio"] span[data-testid="stRadioCircle"],
         div[data-testid="stRadio"] div[data-testid="stRadioCircle"],
-        div[data-testid="stRadio"] label div:first-child {
+        div[data-testid="stRadio"] [data-testid="stRadioCircle"],
+        div[data-testid="stRadio"] label > div > div:first-child,
+        div[data-testid="stRadio"] label > div:first-child:not(:last-child) {
             display: none !important;
         }
         
